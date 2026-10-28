@@ -128,7 +128,7 @@ Los datos meteorológicos son provistos por el **Servicio Meteorológico Naciona
 
 Este desarrollo es una integración comunitaria de código abierto para Home Assistant y no posee afiliación oficial con el Servicio Meteorológico Nacional.
 
-*Imagen del SMN provista bajo licencia https://creativecommons.org/licenses/by/2.5/ar/deed.en
+**Logo del Servicio Meteorológico Nacional:** “SMN Logo Alta.png”, procedente del sitio web de Casa Rosada (Presidencia de la Nación Argentina), disponible en [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:SMN_Logo_Alta.png), bajo licencia [Creative Commons Atribución 2.5 Argentina (CC BY 2.5 AR)](https://creativecommons.org/licenses/by/2.5/ar/). El uso de la imagen no implica respaldo ni afiliación oficial con este proyecto.
 ---
 
 ## Licencia
