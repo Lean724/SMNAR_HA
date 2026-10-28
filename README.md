@@ -1,8 +1,8 @@
 <p align="center">
   <img src="images/logo.png" alt="Servicio Meteorológico Nacional" width="220">
-</p>
+</p>*
 
-# Servicio Meteorológico Nacional (SMN Argentina) para Home Assistant
+# Servicio Meteorológico Nacional (SMN Argentina) para Home Assistant (Integración independiente)
 
 Integración para Home Assistant que ofrece el estado del tiempo y pronóstico del Servicio Meteorológico Nacional (SMN) argentino.
 
@@ -128,6 +128,7 @@ Los datos meteorológicos son provistos por el **Servicio Meteorológico Naciona
 
 Este desarrollo es una integración comunitaria de código abierto para Home Assistant y no posee afiliación oficial con el Servicio Meteorológico Nacional.
 
+*Imagen del SMN provista bajo licencia https://creativecommons.org/licenses/by/2.5/ar/deed.en
 ---
 
 ## Licencia
