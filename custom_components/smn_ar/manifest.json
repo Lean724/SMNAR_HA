@@ -1,0 +1,11 @@
+{
+  "domain": "smn_ar",
+  "name": "Servicio Meteorológico Nacional (Argentina)",
+  "codeowners": ["@Lean724"],
+  "config_flow": true,
+  "documentation": "https://github.com/Lean724/SMNAR_HA",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Lean724/SMNAR_HA/issues",
+  "version": "1.0.0"
+}

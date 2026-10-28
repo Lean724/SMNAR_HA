@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "National Meteorological Service (Argentina)",
+        "description": "Select the SMN weather station to monitor current conditions and 5-day weather forecast.",
+        "data": {
+          "station": "Weather station",
+          "scan_interval": "Update interval (seconds)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This weather station is already configured in Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SMN Configuration Options",
+        "description": "Modify the selected weather station or update frequency.",
+        "data": {
+          "station": "Weather station",
+          "scan_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperature"
+      },
+      "apparent_temperature": {
+        "name": "Feels like"
+      },
+      "humidity": {
+        "name": "Humidity"
+      },
+      "pressure": {
+        "name": "Atmospheric pressure"
+      },
+      "wind_speed": {
+        "name": "Wind speed"
+      },
+      "wind_direction": {
+        "name": "Wind direction"
+      },
+      "visibility": {
+        "name": "Visibility"
+      },
+      "description": {
+        "name": "Current condition"
+      }
+    }
+  }
+}

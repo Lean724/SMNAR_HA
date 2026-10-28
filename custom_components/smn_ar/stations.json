@@ -1,0 +1,1064 @@
+[
+  {
+    "name": "AEROPARQUE AERO",
+    "province": "CAPITAL FEDERAL",
+    "latitude": -34.55,
+    "longitude": -58.4167,
+    "altitude": 6,
+    "station_id": "87582",
+    "oaci": "SABE"
+  },
+  {
+    "name": "AZUL AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -36.8167,
+    "longitude": -59.8833,
+    "altitude": 147,
+    "station_id": "87641",
+    "oaci": "SAZA"
+  },
+  {
+    "name": "BAHIA BLANCA AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -38.7,
+    "longitude": -62.15,
+    "altitude": 83,
+    "station_id": "87750",
+    "oaci": "SAZB"
+  },
+  {
+    "name": "BARILOCHE AERO",
+    "province": "RIO NEGRO",
+    "latitude": -41.1333,
+    "longitude": -71.15,
+    "altitude": 835,
+    "station_id": "87765",
+    "oaci": "SAZS"
+  },
+  {
+    "name": "BASE BELGRANO II",
+    "province": "ANTARTIDA",
+    "latitude": -77.8667,
+    "longitude": -34.6167,
+    "altitude": 256,
+    "station_id": "89034",
+    "oaci": "SAYB"
+  },
+  {
+    "name": "BASE CARLINI (EX JUBANY)",
+    "province": "ANTARTIDA",
+    "latitude": -62.2333,
+    "longitude": -58.65,
+    "altitude": 11,
+    "station_id": "89053",
+    "oaci": "SAYJ"
+  },
+  {
+    "name": "BASE ESPERANZA",
+    "province": "ANTARTIDA",
+    "latitude": -63.3833,
+    "longitude": -56.9833,
+    "altitude": 24,
+    "station_id": "88963",
+    "oaci": "SAYE"
+  },
+  {
+    "name": "BASE MARAMBIO",
+    "province": "ANTARTIDA",
+    "latitude": -64.2333,
+    "longitude": -56.6167,
+    "altitude": 198,
+    "station_id": "89055",
+    "oaci": "SAWB"
+  },
+  {
+    "name": "BASE ORCADAS",
+    "province": "ANTARTIDA",
+    "latitude": -60.7333,
+    "longitude": -44.7333,
+    "altitude": 12,
+    "station_id": "88968",
+    "oaci": "SAYO"
+  },
+  {
+    "name": "BASE SAN MARTIN",
+    "province": "ANTARTIDA",
+    "latitude": -68.1167,
+    "longitude": -67.1,
+    "altitude": 7,
+    "station_id": "89066",
+    "oaci": "SAYS"
+  },
+  {
+    "name": "BENITO JUAREZ AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -37.7,
+    "longitude": -59.7833,
+    "altitude": 207,
+    "station_id": "87649",
+    "oaci": "SAZJ"
+  },
+  {
+    "name": "BERNARDO DE IRIGOYEN AERO",
+    "province": "MISIONES",
+    "latitude": -26.2667,
+    "longitude": -53.6667,
+    "altitude": 815,
+    "station_id": "87163",
+    "oaci": "SATI"
+  },
+  {
+    "name": "BOLIVAR AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -36.1833,
+    "longitude": -61.0667,
+    "altitude": 94,
+    "station_id": "87640",
+    "oaci": "SAZI"
+  },
+  {
+    "name": "BUENOS AIRES OBSERVATORIO",
+    "province": "CAPITAL FEDERAL",
+    "latitude": -34.5833,
+    "longitude": -58.4833,
+    "altitude": 25,
+    "station_id": "87585",
+    "oaci": "SABA"
+  },
+  {
+    "name": "CAMPO DE MAYO AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.5333,
+    "longitude": -58.6667,
+    "altitude": 26,
+    "station_id": "87570",
+    "oaci": "SADO"
+  },
+  {
+    "name": "CATAMARCA AERO",
+    "province": "CATAMARCA",
+    "latitude": -28.5833,
+    "longitude": -65.75,
+    "altitude": 464,
+    "station_id": "87222",
+    "oaci": "SANC"
+  },
+  {
+    "name": "CERES AERO",
+    "province": "SANTA FE",
+    "latitude": -29.8667,
+    "longitude": -61.9333,
+    "altitude": 88,
+    "station_id": "87257",
+    "oaci": "SANW"
+  },
+  {
+    "name": "CHAMICAL AERO",
+    "province": "LA RIOJA",
+    "latitude": -30.3333,
+    "longitude": -66.2833,
+    "altitude": 461,
+    "station_id": "87320",
+    "oaci": "SACT"
+  },
+  {
+    "name": "CHAPELCO AERO",
+    "province": "NEUQUEN",
+    "latitude": -40.0667,
+    "longitude": -71.1333,
+    "altitude": 779,
+    "station_id": "87761",
+    "oaci": "SAZY"
+  },
+  {
+    "name": "CHEPES",
+    "province": "LA RIOJA",
+    "latitude": -31.35,
+    "longitude": -66.5667,
+    "altitude": 646,
+    "station_id": "87322",
+    "oaci": "SACP"
+  },
+  {
+    "name": "CHILECITO AERO",
+    "province": "LA RIOJA",
+    "latitude": -29.2167,
+    "longitude": -67.4333,
+    "altitude": 947,
+    "station_id": "87213",
+    "oaci": "SANO"
+  },
+  {
+    "name": "COMODORO RIVADAVIA AERO",
+    "province": "CHUBUT",
+    "latitude": -45.7833,
+    "longitude": -67.45,
+    "altitude": 46,
+    "station_id": "87860",
+    "oaci": "SAVC"
+  },
+  {
+    "name": "CONCORDIA AERO",
+    "province": "ENTRE RIOS",
+    "latitude": -31.3,
+    "longitude": -58.0,
+    "altitude": 37,
+    "station_id": "87395",
+    "oaci": "SAAC"
+  },
+  {
+    "name": "CORDOBA AERO",
+    "province": "CORDOBA",
+    "latitude": -31.2833,
+    "longitude": -64.2,
+    "altitude": 495,
+    "station_id": "87344",
+    "oaci": "SACO"
+  },
+  {
+    "name": "CORDOBA OBSERVATORIO",
+    "province": "CORDOBA",
+    "latitude": -31.4167,
+    "longitude": -64.1833,
+    "altitude": 425,
+    "station_id": "87345",
+    "oaci": "SACK"
+  },
+  {
+    "name": "CORONEL SUAREZ AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -37.45,
+    "longitude": -61.8833,
+    "altitude": 233,
+    "station_id": "87637",
+    "oaci": "SAZC"
+  },
+  {
+    "name": "CORRIENTES AERO",
+    "province": "CORRIENTES",
+    "latitude": -27.4333,
+    "longitude": -58.75,
+    "altitude": 62,
+    "station_id": "87166",
+    "oaci": "SARC"
+  },
+  {
+    "name": "DOLORES AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -36.3167,
+    "longitude": -57.7167,
+    "altitude": 9,
+    "station_id": "87648",
+    "oaci": "SAZD"
+  },
+  {
+    "name": "EL BOLSON AERO",
+    "province": "RIO NEGRO",
+    "latitude": -41.95,
+    "longitude": -71.5333,
+    "altitude": 326,
+    "station_id": "87800",
+    "oaci": "SAVB"
+  },
+  {
+    "name": "EL CALAFATE AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -50.2833,
+    "longitude": -72.05,
+    "altitude": 204,
+    "station_id": "87904",
+    "oaci": "SAWC"
+  },
+  {
+    "name": "EL PALOMAR AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.6,
+    "longitude": -58.6,
+    "altitude": 12,
+    "station_id": "87571",
+    "oaci": "SADP"
+  },
+  {
+    "name": "ESCUELA DE AVIACION MILITAR AE",
+    "province": "CORDOBA",
+    "latitude": -31.4333,
+    "longitude": -64.2667,
+    "altitude": 502,
+    "station_id": "87347",
+    "oaci": "SACERO"
+  },
+  {
+    "name": "ESQUEL AERO",
+    "province": "CHUBUT",
+    "latitude": -42.9,
+    "longitude": -71.1333,
+    "altitude": 797,
+    "station_id": "87803",
+    "oaci": "SAVE"
+  },
+  {
+    "name": "EZEIZA AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.8167,
+    "longitude": -58.5333,
+    "altitude": 20,
+    "station_id": "87576",
+    "oaci": "SAEZ"
+  },
+  {
+    "name": "FORMOSA AERO",
+    "province": "FORMOSA",
+    "latitude": -26.2,
+    "longitude": -58.2167,
+    "altitude": 60,
+    "station_id": "87162",
+    "oaci": "SARF"
+  },
+  {
+    "name": "GENERAL PICO AERO",
+    "province": "LA PAMPA",
+    "latitude": -35.6833,
+    "longitude": -63.75,
+    "altitude": 145,
+    "station_id": "87532",
+    "oaci": "SAZG"
+  },
+  {
+    "name": "GOBERNADOR GREGORES AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -48.7667,
+    "longitude": -70.15,
+    "altitude": 358,
+    "station_id": "87880",
+    "oaci": "SAWR"
+  },
+  {
+    "name": "GUALEGUAYCHU AERO",
+    "province": "ENTRE RIOS",
+    "latitude": -33.0,
+    "longitude": -58.6,
+    "altitude": 23,
+    "station_id": "87497",
+    "oaci": "SAAG"
+  },
+  {
+    "name": "IGUAZU AERO",
+    "province": "MISIONES",
+    "latitude": -25.7167,
+    "longitude": -54.4667,
+    "altitude": 270,
+    "station_id": "87097",
+    "oaci": "SARI"
+  },
+  {
+    "name": "ITUZAINGO",
+    "province": "CORRIENTES",
+    "latitude": -27.5833,
+    "longitude": -56.6667,
+    "altitude": 72,
+    "station_id": "87173",
+    "oaci": "SARO"
+  },
+  {
+    "name": "JACHAL",
+    "province": "SAN JUAN",
+    "latitude": -30.2167,
+    "longitude": -68.7333,
+    "altitude": 1175,
+    "station_id": "87305",
+    "oaci": "SAMJ"
+  },
+  {
+    "name": "JUJUY AERO",
+    "province": "JUJUY",
+    "latitude": -24.3833,
+    "longitude": -65.0833,
+    "altitude": 909,
+    "station_id": "87046",
+    "oaci": "SASJ"
+  },
+  {
+    "name": "JUJUY U N",
+    "province": "JUJUY",
+    "latitude": -24.1667,
+    "longitude": -65.3167,
+    "altitude": 1302,
+    "station_id": "87043",
+    "oaci": ""
+  },
+  {
+    "name": "JUNIN AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.55,
+    "longitude": -60.9167,
+    "altitude": 81,
+    "station_id": "87548",
+    "oaci": "SAAJ"
+  },
+  {
+    "name": "LA PLATA AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.95,
+    "longitude": -57.8833,
+    "altitude": 23,
+    "station_id": "87593",
+    "oaci": "SADL"
+  },
+  {
+    "name": "LA QUIACA OBSERVATORIO",
+    "province": "JUJUY",
+    "latitude": -22.1,
+    "longitude": -65.6,
+    "altitude": 3459,
+    "station_id": "87007",
+    "oaci": "SASQ"
+  },
+  {
+    "name": "LA RIOJA AERO",
+    "province": "LA RIOJA",
+    "latitude": -29.3667,
+    "longitude": -66.7833,
+    "altitude": 438,
+    "station_id": "87217",
+    "oaci": "SANL"
+  },
+  {
+    "name": "LABOULAYE AERO",
+    "province": "CORDOBA",
+    "latitude": -34.1167,
+    "longitude": -63.3667,
+    "altitude": 137,
+    "station_id": "87534",
+    "oaci": "SAOL"
+  },
+  {
+    "name": "LAS FLORES",
+    "province": "BUENOS AIRES",
+    "latitude": -36.0333,
+    "longitude": -59.1333,
+    "altitude": 36,
+    "station_id": "87563",
+    "oaci": "SAEL"
+  },
+  {
+    "name": "LAS LOMITAS",
+    "province": "FORMOSA",
+    "latitude": -24.7,
+    "longitude": -60.5833,
+    "altitude": 130,
+    "station_id": "87078",
+    "oaci": "SATK"
+  },
+  {
+    "name": "MALARGUE AERO",
+    "province": "MENDOZA",
+    "latitude": -35.4667,
+    "longitude": -69.5833,
+    "altitude": 1425,
+    "station_id": "87506",
+    "oaci": "SAMM"
+  },
+  {
+    "name": "MAQUINCHAO",
+    "province": "RIO NEGRO",
+    "latitude": -41.2333,
+    "longitude": -68.7,
+    "altitude": 888,
+    "station_id": "87774",
+    "oaci": "SAVQ"
+  },
+  {
+    "name": "MAR DEL PLATA AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -37.9167,
+    "longitude": -57.5667,
+    "altitude": 21,
+    "station_id": "87692",
+    "oaci": "SAZM"
+  },
+  {
+    "name": "MARCOS JUAREZ AERO",
+    "province": "CORDOBA",
+    "latitude": -32.6667,
+    "longitude": -62.15,
+    "altitude": 114,
+    "station_id": "87467",
+    "oaci": "SAOM"
+  },
+  {
+    "name": "MARIANO MORENO AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.55,
+    "longitude": -58.7833,
+    "altitude": 32,
+    "station_id": "87572",
+    "oaci": "SADJ"
+  },
+  {
+    "name": "MENDOZA AERO",
+    "province": "MENDOZA",
+    "latitude": -32.8333,
+    "longitude": -68.7833,
+    "altitude": 704,
+    "station_id": "87418",
+    "oaci": "SAME"
+  },
+  {
+    "name": "MENDOZA OBSERVATORIO",
+    "province": "MENDOZA",
+    "latitude": -32.8833,
+    "longitude": -68.8667,
+    "altitude": 827,
+    "station_id": "87420",
+    "oaci": "SAMK"
+  },
+  {
+    "name": "MERCEDES AERO (CTES)",
+    "province": "CORRIENTES",
+    "latitude": -29.2167,
+    "longitude": -58.0833,
+    "altitude": 107,
+    "station_id": "87281",
+    "oaci": "SATM"
+  },
+  {
+    "name": "MERLO AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.6833,
+    "longitude": -58.7333,
+    "altitude": 24,
+    "station_id": "87573",
+    "oaci": "SADR"
+  },
+  {
+    "name": "METAN",
+    "province": "SALTA",
+    "latitude": -25.5167,
+    "longitude": -64.9667,
+    "altitude": 855,
+    "station_id": "87050",
+    "oaci": "SASM"
+  },
+  {
+    "name": "MONTE CASEROS AERO",
+    "province": "CORRIENTES",
+    "latitude": -30.25,
+    "longitude": -57.6333,
+    "altitude": 54,
+    "station_id": "87393",
+    "oaci": "SARM"
+  },
+  {
+    "name": "MORON AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.6667,
+    "longitude": -58.6333,
+    "altitude": 24,
+    "station_id": "87574",
+    "oaci": "SADM"
+  },
+  {
+    "name": "NEUQUEN AERO",
+    "province": "NEUQUEN",
+    "latitude": -38.95,
+    "longitude": -68.1333,
+    "altitude": 271,
+    "station_id": "87715",
+    "oaci": "SAZN"
+  },
+  {
+    "name": "NUEVE DE JULIO",
+    "province": "BUENOS AIRES",
+    "latitude": -35.4333,
+    "longitude": -60.8667,
+    "altitude": 76,
+    "station_id": "87550",
+    "oaci": "SAZX"
+  },
+  {
+    "name": "OBERA",
+    "province": "MISIONES",
+    "latitude": -27.4833,
+    "longitude": -55.1167,
+    "altitude": 303,
+    "station_id": "87187",
+    "oaci": "SATO"
+  },
+  {
+    "name": "OLAVARRIA AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -36.8833,
+    "longitude": -60.2167,
+    "altitude": 166,
+    "station_id": "87643",
+    "oaci": "SAZF"
+  },
+  {
+    "name": "ORAN AERO",
+    "province": "SALTA",
+    "latitude": -23.15,
+    "longitude": -64.3167,
+    "altitude": 357,
+    "station_id": "87016",
+    "oaci": "SASO"
+  },
+  {
+    "name": "PARANA AERO",
+    "province": "ENTRE RIOS",
+    "latitude": -31.7833,
+    "longitude": -60.4833,
+    "altitude": 78,
+    "station_id": "87374",
+    "oaci": "SAAP"
+  },
+  {
+    "name": "PASO DE INDIOS",
+    "province": "CHUBUT",
+    "latitude": -43.85,
+    "longitude": -69.0333,
+    "altitude": 478,
+    "station_id": "87814",
+    "oaci": "SAVP"
+  },
+  {
+    "name": "PASO DE LOS LIBRES AERO",
+    "province": "CORRIENTES",
+    "latitude": -29.6833,
+    "longitude": -57.1333,
+    "altitude": 70,
+    "station_id": "87289",
+    "oaci": "SARL"
+  },
+  {
+    "name": "PEHUAJO AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -35.8333,
+    "longitude": -61.85,
+    "altitude": 87,
+    "station_id": "87544",
+    "oaci": "SAZP"
+  },
+  {
+    "name": "PERITO MORENO AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -46.5333,
+    "longitude": -70.9833,
+    "altitude": 429,
+    "station_id": "87852",
+    "oaci": "SAWP"
+  },
+  {
+    "name": "PIGUE AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -37.6,
+    "longitude": -62.3833,
+    "altitude": 304,
+    "station_id": "87679",
+    "oaci": "SAZE"
+  },
+  {
+    "name": "PILAR OBSERVATORIO",
+    "province": "CORDOBA",
+    "latitude": -31.6667,
+    "longitude": -63.8667,
+    "altitude": 338,
+    "station_id": "87349",
+    "oaci": "SACI"
+  },
+  {
+    "name": "POSADAS AERO",
+    "province": "MISIONES",
+    "latitude": -27.3833,
+    "longitude": -55.9667,
+    "altitude": 125,
+    "station_id": "87178",
+    "oaci": "SARP"
+  },
+  {
+    "name": "PRESIDENCIA ROQUE SAENZ PEÑA A",
+    "province": "CHACO",
+    "latitude": -26.7333,
+    "longitude": -60.4833,
+    "altitude": 93,
+    "station_id": "87148",
+    "oaci": "SARSERO"
+  },
+  {
+    "name": "PUERTO DESEADO AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -47.7333,
+    "longitude": -65.9,
+    "altitude": 80,
+    "station_id": "87896",
+    "oaci": "SAWD"
+  },
+  {
+    "name": "PUERTO MADRYN AERO",
+    "province": "CHUBUT",
+    "latitude": -42.75,
+    "longitude": -65.1,
+    "altitude": 136,
+    "station_id": "87823",
+    "oaci": "SAVY"
+  },
+  {
+    "name": "PUNTA INDIO B.A.",
+    "province": "BUENOS AIRES",
+    "latitude": -35.35,
+    "longitude": -57.2833,
+    "altitude": 22,
+    "station_id": "87596",
+    "oaci": "SAAI"
+  },
+  {
+    "name": "RAFAELA AERO",
+    "province": "SANTA FE",
+    "latitude": -31.2667,
+    "longitude": -61.5,
+    "altitude": 99,
+    "station_id": "87360",
+    "oaci": "SAFR"
+  },
+  {
+    "name": "RECONQUISTA AERO",
+    "province": "SANTA FE",
+    "latitude": -29.2,
+    "longitude": -59.6833,
+    "altitude": 53,
+    "station_id": "87270",
+    "oaci": "SATR"
+  },
+  {
+    "name": "RESISTENCIA AERO",
+    "province": "CHACO",
+    "latitude": -27.4333,
+    "longitude": -59.0333,
+    "altitude": 52,
+    "station_id": "87155",
+    "oaci": "SARE"
+  },
+  {
+    "name": "RIO CUARTO AERO",
+    "province": "CORDOBA",
+    "latitude": -33.0833,
+    "longitude": -64.2667,
+    "altitude": 421,
+    "station_id": "87453",
+    "oaci": "SAOC"
+  },
+  {
+    "name": "RIO GALLEGOS AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -51.6,
+    "longitude": -69.3,
+    "altitude": 25,
+    "station_id": "87925",
+    "oaci": "SAWG"
+  },
+  {
+    "name": "RIO GRANDE B.A.",
+    "province": "TIERRA DEL FUEGO",
+    "latitude": -53.7667,
+    "longitude": -67.75,
+    "altitude": 22,
+    "station_id": "87934",
+    "oaci": "SAWE"
+  },
+  {
+    "name": "RIVADAVIA",
+    "province": "SALTA",
+    "latitude": -24.1833,
+    "longitude": -62.8833,
+    "altitude": 205,
+    "station_id": "87065",
+    "oaci": "SASR"
+  },
+  {
+    "name": "ROSARIO AERO",
+    "province": "SANTA FE",
+    "latitude": -32.9,
+    "longitude": -60.7667,
+    "altitude": 25,
+    "station_id": "87480",
+    "oaci": "SAAR"
+  },
+  {
+    "name": "SALTA AERO",
+    "province": "SALTA",
+    "latitude": -24.8333,
+    "longitude": -65.4667,
+    "altitude": 1221,
+    "station_id": "87047",
+    "oaci": "SASA"
+  },
+  {
+    "name": "SAN ANTONIO OESTE AERO",
+    "province": "RIO NEGRO",
+    "latitude": -40.75,
+    "longitude": -65.0167,
+    "altitude": 20,
+    "station_id": "87784",
+    "oaci": "SAVN"
+  },
+  {
+    "name": "SAN FERNANDO AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -34.45,
+    "longitude": -58.5833,
+    "altitude": 5,
+    "station_id": "87553",
+    "oaci": "SADF"
+  },
+  {
+    "name": "SAN JUAN AERO",
+    "province": "SAN JUAN",
+    "latitude": -31.5667,
+    "longitude": -68.4167,
+    "altitude": 598,
+    "station_id": "87311",
+    "oaci": "SANU"
+  },
+  {
+    "name": "SAN JULIAN AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -49.3,
+    "longitude": -67.8,
+    "altitude": 62,
+    "station_id": "87909",
+    "oaci": "SAWJ"
+  },
+  {
+    "name": "SAN LUIS AERO",
+    "province": "SAN LUIS",
+    "latitude": -33.2667,
+    "longitude": -66.35,
+    "altitude": 713,
+    "station_id": "87436",
+    "oaci": "SAOU"
+  },
+  {
+    "name": "SAN MARTIN (MZA)",
+    "province": "MENDOZA",
+    "latitude": -33.0667,
+    "longitude": -68.45,
+    "altitude": 653,
+    "station_id": "87416",
+    "oaci": "SAMI"
+  },
+  {
+    "name": "SAN RAFAEL AERO",
+    "province": "MENDOZA",
+    "latitude": -34.5833,
+    "longitude": -68.4,
+    "altitude": 748,
+    "station_id": "87509",
+    "oaci": "SAMR"
+  },
+  {
+    "name": "SANTA CRUZ AERO",
+    "province": "SANTA CRUZ",
+    "latitude": -50.0167,
+    "longitude": -68.5667,
+    "altitude": 111,
+    "station_id": "87912",
+    "oaci": "SAWU"
+  },
+  {
+    "name": "SANTA ROSA AERO",
+    "province": "LA PAMPA",
+    "latitude": -36.5833,
+    "longitude": -64.2667,
+    "altitude": 191,
+    "station_id": "87623",
+    "oaci": "SAZR"
+  },
+  {
+    "name": "SANTA ROSA DE CONLARA AERO",
+    "province": "SAN LUIS",
+    "latitude": -32.3667,
+    "longitude": -65.1667,
+    "altitude": 620,
+    "station_id": "87444",
+    "oaci": "SAOS"
+  },
+  {
+    "name": "SANTIAGO DEL ESTERO AERO",
+    "province": "SANTIAGO DEL ESTERO",
+    "latitude": -27.75,
+    "longitude": -64.2833,
+    "altitude": 199,
+    "station_id": "87129",
+    "oaci": "SANE"
+  },
+  {
+    "name": "SAUCE VIEJO AERO",
+    "province": "SANTA FE",
+    "latitude": -31.7,
+    "longitude": -60.8,
+    "altitude": 18,
+    "station_id": "87371",
+    "oaci": "SAAV"
+  },
+  {
+    "name": "SUNCHALES AERO",
+    "province": "SANTA FE",
+    "latitude": -30.95,
+    "longitude": -61.5167,
+    "altitude": 92,
+    "station_id": "87356",
+    "oaci": "SAFS"
+  },
+  {
+    "name": "TANDIL AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -37.2333,
+    "longitude": -59.2167,
+    "altitude": 175,
+    "station_id": "87645",
+    "oaci": "SAZT"
+  },
+  {
+    "name": "TARTAGAL AERO",
+    "province": "SALTA",
+    "latitude": -22.6,
+    "longitude": -63.7833,
+    "altitude": 450,
+    "station_id": "87022",
+    "oaci": "SAST"
+  },
+  {
+    "name": "TERMAS DE RIO HONDO AERO",
+    "province": "SANTIAGO DEL ESTERO",
+    "latitude": -27.5,
+    "longitude": -64.9333,
+    "altitude": 280,
+    "station_id": "87127",
+    "oaci": "SANR"
+  },
+  {
+    "name": "TINOGASTA",
+    "province": "CATAMARCA",
+    "latitude": -28.0667,
+    "longitude": -67.55,
+    "altitude": 1201,
+    "station_id": "87211",
+    "oaci": "SANI"
+  },
+  {
+    "name": "TRELEW AERO",
+    "province": "CHUBUT",
+    "latitude": -43.2,
+    "longitude": -65.2667,
+    "altitude": 43,
+    "station_id": "87828",
+    "oaci": "SAVT"
+  },
+  {
+    "name": "TRENQUE LAUQUEN",
+    "province": "BUENOS AIRES",
+    "latitude": -35.9667,
+    "longitude": -62.7167,
+    "altitude": 95,
+    "station_id": "87540",
+    "oaci": "SAET"
+  },
+  {
+    "name": "TRES ARROYOS",
+    "province": "BUENOS AIRES",
+    "latitude": -38.35,
+    "longitude": -60.2833,
+    "altitude": 115,
+    "station_id": "87688",
+    "oaci": "SAZH"
+  },
+  {
+    "name": "TUCUMAN AERO",
+    "province": "TUCUMAN",
+    "latitude": -26.8333,
+    "longitude": -65.1,
+    "altitude": 450,
+    "station_id": "87121",
+    "oaci": "SANT"
+  },
+  {
+    "name": "USHUAIA AERO",
+    "province": "TIERRA DEL FUEGO",
+    "latitude": -54.8333,
+    "longitude": -68.3,
+    "altitude": 57,
+    "station_id": "87938",
+    "oaci": "SAWH"
+  },
+  {
+    "name": "USPALLATA",
+    "province": "MENDOZA",
+    "latitude": -32.5833,
+    "longitude": -69.3333,
+    "altitude": 1899,
+    "station_id": "87405",
+    "oaci": "SAMU"
+  },
+  {
+    "name": "VENADO TUERTO AERO",
+    "province": "SANTA FE",
+    "latitude": -33.6667,
+    "longitude": -61.95,
+    "altitude": 112,
+    "station_id": "87468",
+    "oaci": "SAFV"
+  },
+  {
+    "name": "VICTORICA",
+    "province": "LA PAMPA",
+    "latitude": -36.2167,
+    "longitude": -65.4333,
+    "altitude": 312,
+    "station_id": "87616",
+    "oaci": "SAHV"
+  },
+  {
+    "name": "VIEDMA AERO",
+    "province": "RIO NEGRO",
+    "latitude": -40.85,
+    "longitude": -63.0,
+    "altitude": 7,
+    "station_id": "87791",
+    "oaci": "SAVV"
+  },
+  {
+    "name": "VILLA DE MARIA DEL RIO SECO",
+    "province": "CORDOBA",
+    "latitude": -29.9,
+    "longitude": -63.7167,
+    "altitude": 341,
+    "station_id": "87244",
+    "oaci": "SACV"
+  },
+  {
+    "name": "VILLA DOLORES AERO",
+    "province": "CORDOBA",
+    "latitude": -31.95,
+    "longitude": -65.1333,
+    "altitude": 569,
+    "station_id": "87328",
+    "oaci": "SAOD"
+  },
+  {
+    "name": "VILLA GESELL AERO",
+    "province": "BUENOS AIRES",
+    "latitude": -37.2333,
+    "longitude": -57.0167,
+    "altitude": 9,
+    "station_id": "87663",
+    "oaci": "SAZV"
+  },
+  {
+    "name": "VILLA REYNOLDS AERO",
+    "province": "SAN LUIS",
+    "latitude": -33.7167,
+    "longitude": -65.3667,
+    "altitude": 486,
+    "station_id": "87448",
+    "oaci": "SAOR"
+  }
+]

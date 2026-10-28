@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Servicio Meteorológico Nacional (Argentina)",
+        "description": "Seleccione la estación meteorológica del SMN para monitorear el estado actual y el pronóstico extendido a 5 días.",
+        "data": {
+          "station": "Estación meteorológica",
+          "scan_interval": "Intervalo de actualización (segundos)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Esta estación meteorológica ya se encuentra configurada en Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de configuración de SMN",
+        "description": "Modifique la estación meteorológica seleccionada o la frecuencia de actualización.",
+        "data": {
+          "station": "Estación meteorológica",
+          "scan_interval": "Intervalo de actualización (segundos)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "apparent_temperature": {
+        "name": "Sensación térmica"
+      },
+      "humidity": {
+        "name": "Humedad"
+      },
+      "pressure": {
+        "name": "Presión atmosférica"
+      },
+      "wind_speed": {
+        "name": "Velocidad del viento"
+      },
+      "wind_direction": {
+        "name": "Dirección del viento"
+      },
+      "visibility": {
+        "name": "Visibilidad"
+      },
+      "description": {
+        "name": "Condición actual"
+      }
+    }
+  }
+}
