@@ -7,7 +7,11 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
+
+try:
+    from homeassistant.config_entries import ConfigFlowResult
+except ImportError:
+    from homeassistant.data_entry_flow import FlowResult as ConfigFlowResult
 
 from .const import (
     CONF_SCAN_INTERVAL,
@@ -25,7 +29,6 @@ from .coordinator import (
 def get_station_options() -> dict[str, str]:
     """Get sorted station dictionary: name -> 'Name (Province)'."""
     stations = load_stations()
-    # Sort by province then name
     sorted_st = sorted(stations, key=lambda s: (s["province"], s["name"]))
     return {
         s["name"]: f"{s['name']} ({s['province']})"
@@ -40,7 +43,7 @@ class SMNConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
         station_options = get_station_options()
@@ -104,7 +107,7 @@ class SMNOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Manage options."""
         station_options = get_station_options()
 

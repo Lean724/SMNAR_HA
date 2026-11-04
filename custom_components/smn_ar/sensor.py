@@ -39,7 +39,6 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="temperature",
         translation_key="temperature",
-        name="Temperatura",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -48,7 +47,6 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="apparent_temperature",
         translation_key="apparent_temperature",
-        name="Sensación térmica",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -57,7 +55,6 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="humidity",
         translation_key="humidity",
-        name="Humedad",
         native_unit_of_measurement=PERCENTAGE,
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -66,7 +63,6 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="pressure",
         translation_key="pressure",
-        name="Presión atmosférica",
         native_unit_of_measurement=UnitOfPressure.HPA,
         device_class=SensorDeviceClass.ATMOSPHERIC_PRESSURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -75,7 +71,6 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="wind_speed",
         translation_key="wind_speed",
-        name="Velocidad del viento",
         native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
         device_class=SensorDeviceClass.WIND_SPEED,
         state_class=SensorStateClass.MEASUREMENT,
@@ -84,14 +79,12 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="wind_direction",
         translation_key="wind_direction",
-        name="Dirección del viento",
         icon="mdi:compass-outline",
         value_fn=lambda data: data.get("current", {}).get("wind_direction"),
     ),
     SMNSensorEntityDescription(
         key="visibility",
         translation_key="visibility",
-        name="Visibilidad",
         native_unit_of_measurement=UnitOfLength.KILOMETERS,
         device_class=SensorDeviceClass.DISTANCE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -100,7 +93,6 @@ SENSOR_DESCRIPTIONS: tuple[SMNSensorEntityDescription, ...] = (
     SMNSensorEntityDescription(
         key="description",
         translation_key="description",
-        name="Condición actual",
         icon="mdi:weather-partly-cloudy",
         value_fn=lambda data: data.get("current", {}).get("description"),
     ),
@@ -113,7 +105,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SMN sensors based on a config entry."""
-    coordinator: SMNDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: SMNDataUpdateCoordinator = (
+        getattr(entry, "runtime_data", None) or hass.data[DOMAIN][entry.entry_id]
+    )
 
     async_add_entities(
         SMNSensor(coordinator, entry, description)

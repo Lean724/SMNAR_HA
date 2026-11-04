@@ -152,12 +152,21 @@ def test_parse_forecast():
 
     assert len(hourly) == 3
     assert hourly[0]["temperature"] == 20.0
+    assert hourly[0]["native_temperature"] == 20.0
     assert hourly[0]["wind_speed"] == 10.0
+    assert hourly[0]["native_wind_speed"] == 10.0
     assert hourly[0]["wind_bearing"] == 90
     assert hourly[2]["precipitation"] == 2.5
+    assert hourly[2]["native_precipitation"] == 2.5
     assert hourly[2]["condition"] == "rainy"
+    # Ensure UTC timezone offset (+00:00)
+    assert "+00:00" in hourly[0]["datetime"]
 
     assert len(daily) == 1
     assert daily[0]["temperature"] == 24.0  # Max
+    assert daily[0]["native_temperature"] == 24.0
     assert daily[0]["templow"] == 18.0     # Min
+    assert daily[0]["native_templow"] == 18.0
     assert daily[0]["precipitation"] == 2.5
+    assert daily[0]["native_precipitation"] == 2.5
+    assert "+00:00" in daily[0]["datetime"]

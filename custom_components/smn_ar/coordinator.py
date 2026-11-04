@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import io
 import json
 import logging
@@ -41,6 +41,11 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Argentina standard time (UTC-3)
+ARGENTINA_TIMEZONE = timezone(timedelta(hours=-3))
+
+_STATIONS_CACHE: list[dict[str, Any]] | None = None
 
 COMPASS_DIRECTIONS = {
     "N": 0,
@@ -116,11 +121,15 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 
 
 def load_stations() -> list[dict[str, Any]]:
-    """Load precompiled stations list from stations.json."""
+    """Load precompiled stations list from stations.json (cached in memory)."""
+    global _STATIONS_CACHE
+    if _STATIONS_CACHE is not None:
+        return _STATIONS_CACHE
     json_path = os.path.join(os.path.dirname(__file__), "stations.json")
     try:
         with open(json_path, encoding="utf-8") as file:
-            return json.load(file)
+            _STATIONS_CACHE = json.load(file)
+            return _STATIONS_CACHE
     except Exception as err:
         _LOGGER.error("Failed to load stations.json: %s", err)
         return []
@@ -415,7 +424,10 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     m.groups()
                 )
                 month = MONTHS_MAP.get(month_str, 1)
-                dt = datetime(int(year), month, int(day), int(hour), 0)
+                dt = datetime(
+                    int(year), month, int(day), int(hour), 0, tzinfo=ARGENTINA_TIMEZONE
+                )
+                utc_iso = dt.astimezone(timezone.utc).isoformat()
 
                 temp_val = float(temp)
                 precip_val = float(precip)
@@ -438,10 +450,13 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
                 stations_forecast[current_st].append(
                     {
-                        "datetime": dt.isoformat(),
+                        "datetime": utc_iso,
+                        "native_temperature": temp_val,
                         "temperature": temp_val,
                         "wind_bearing": wind_dir_val,
+                        "native_wind_speed": wind_spd_val,
                         "wind_speed": wind_spd_val,
+                        "native_precipitation": precip_val,
                         "precipitation": precip_val,
                         "condition": cond,
                     }
@@ -462,9 +477,9 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         daily_forecast: list[dict[str, Any]] = []
         for day_str, slots in daily_groups.items():
-            temps = [s["temperature"] for s in slots]
-            precips = [s["precipitation"] for s in slots]
-            winds = [s["wind_speed"] for s in slots]
+            temps = [s["native_temperature"] for s in slots]
+            precips = [s["native_precipitation"] for s in slots]
+            winds = [s["native_wind_speed"] for s in slots]
             tot_precip = round(sum(precips), 1)
 
             if tot_precip > 15.0:
@@ -476,12 +491,25 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             else:
                 cond = ATTR_CONDITION_PARTLYCLOUDY
 
+            dt_daily = datetime(
+                int(day_str[:4]),
+                int(day_str[5:7]),
+                int(day_str[8:10]),
+                12,
+                0,
+                tzinfo=timezone.utc,
+            )
+
             daily_forecast.append(
                 {
-                    "datetime": f"{day_str}T12:00:00",
+                    "datetime": dt_daily.isoformat(),
+                    "native_temperature": round(max(temps), 1),
                     "temperature": round(max(temps), 1),
+                    "native_templow": round(min(temps), 1),
                     "templow": round(min(temps), 1),
+                    "native_precipitation": tot_precip,
                     "precipitation": tot_precip,
+                    "native_wind_speed": round(sum(winds) / len(winds), 1),
                     "wind_speed": round(sum(winds) / len(winds), 1),
                     "wind_bearing": slots[0]["wind_bearing"],
                     "condition": cond,

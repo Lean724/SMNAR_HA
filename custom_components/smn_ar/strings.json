@@ -2,26 +2,26 @@
   "config": {
     "step": {
       "user": {
-        "title": "Servicio Meteorológico Nacional (Argentina)",
-        "description": "Seleccione la estación meteorológica del SMN para monitorear el estado actual y el pronóstico extendido a 5 días.",
+        "title": "National Meteorological Service (Argentina)",
+        "description": "Select the SMN weather station to monitor current conditions and 5-day weather forecast.",
         "data": {
-          "station": "Estación meteorológica",
-          "scan_interval": "Intervalo de actualización (segundos)"
+          "station": "Weather station",
+          "scan_interval": "Update interval (seconds)"
         }
       }
     },
     "abort": {
-      "already_configured": "Esta estación meteorológica ya se encuentra configurada en Home Assistant."
+      "already_configured": "This weather station is already configured in Home Assistant."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opciones de configuración de SMN",
-        "description": "Modifique la estación meteorológica seleccionada o la frecuencia de actualización.",
+        "title": "SMN Configuration Options",
+        "description": "Modify the selected weather station or update frequency.",
         "data": {
-          "station": "Estación meteorológica",
-          "scan_interval": "Intervalo de actualización (segundos)"
+          "station": "Weather station",
+          "scan_interval": "Update interval (seconds)"
         }
       }
     }
@@ -29,28 +29,28 @@
   "entity": {
     "sensor": {
       "temperature": {
-        "name": "Temperatura"
+        "name": "Temperature"
       },
       "apparent_temperature": {
-        "name": "Sensación térmica"
+        "name": "Feels like"
       },
       "humidity": {
-        "name": "Humedad"
+        "name": "Humidity"
       },
       "pressure": {
-        "name": "Presión atmosférica"
+        "name": "Atmospheric pressure"
       },
       "wind_speed": {
-        "name": "Velocidad del viento"
+        "name": "Wind speed"
       },
       "wind_direction": {
-        "name": "Dirección del viento"
+        "name": "Wind direction"
       },
       "visibility": {
-        "name": "Visibilidad"
+        "name": "Visibility"
       },
       "description": {
-        "name": "Condición actual"
+        "name": "Current condition"
       }
     }
   }
