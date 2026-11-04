@@ -1,6 +1,6 @@
 <p align="center">
   <img src="images/logo.png" alt="Servicio Meteorológico Nacional" width="220">
-</p>*
+</p>
 
 # Servicio Meteorológico Nacional (SMN Argentina) para Home Assistant (Integración independiente)
 
