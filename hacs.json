@@ -1,5 +1,6 @@
 {
   "name": "Servicio Meteorológico Nacional (SMN Argentina)",
   "country": "AR",
+  "render_readme": true,
   "homeassistant": "2024.1.0"
 }
