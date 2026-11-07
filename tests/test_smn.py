@@ -33,7 +33,7 @@ def test_manifest():
     assert manifest["name"] == "Servicio Meteorológico Nacional (Argentina)"
     assert manifest["config_flow"] is True
     assert manifest["codeowners"] == ["@Lean724"]
-    assert manifest["version"] == "1.0.2"
+    assert manifest["version"] == "1.0.3"
     assert manifest["iot_class"] == "cloud_polling"
 
 
