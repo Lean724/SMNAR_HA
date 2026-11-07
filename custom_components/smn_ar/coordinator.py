@@ -2,28 +2,24 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta, timezone
 import io
 import json
 import logging
 import math
 import os
 import re
-from typing import Any
 import unicodedata
 import zipfile
+from datetime import UTC, datetime, timedelta, timezone
+from typing import Any
 
 import aiohttp
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
-    ATTR_CONDITION_CLEAR_NIGHT,
-    ATTR_CONDITION_CLOUDY,
-    ATTR_CONDITION_LIGHTNING_RAINY,
     ATTR_CONDITION_PARTLYCLOUDY,
     ATTR_CONDITION_POURING,
     ATTR_CONDITION_RAINY,
@@ -33,7 +29,6 @@ from .const import (
     CONDITION_TEXT_MAP,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
-    DOMAIN,
     MONTHS_MAP,
     STATION_ALIASES,
     URL_CURRENT_WEATHER,
@@ -85,9 +80,9 @@ def normalize_name(text: str) -> str:
     s = unicodedata.normalize("NFKD", text)
     s = "".join(c for c in s if not unicodedata.combining(c))
     s = s.upper().replace("_", " ").replace("-", " ").strip()
+    s = re.sub(r"\(.*?\)", "", s).strip()
     s = re.sub(r"\s+AERO$", "", s)
     s = re.sub(r"\s+AEROPUERTO$", "", s)
-    s = re.sub(r"\(.*?\)", "", s).strip()
     s = re.sub(r"[^A-Z0-9\s]", "", s)
     return re.sub(r"\s+", " ", s)
 
@@ -99,9 +94,9 @@ def wind_direction_to_bearing(direction: str | None) -> int | None:
     d = direction.strip().upper()
     if d in COMPASS_DIRECTIONS:
         return COMPASS_DIRECTIONS[d]
-    for key, bearing in COMPASS_DIRECTIONS.items():
-        if key in d:
-            return bearing
+    for token in re.findall(r"[A-Z]+", d):
+        if token in COMPASS_DIRECTIONS:
+            return COMPASS_DIRECTIONS[token]
     return None
 
 
@@ -130,7 +125,7 @@ def load_stations() -> list[dict[str, Any]]:
         with open(json_path, encoding="utf-8") as file:
             _STATIONS_CACHE = json.load(file)
             return _STATIONS_CACHE
-    except Exception as err:
+    except (OSError, ValueError) as err:
         _LOGGER.error("Failed to load stations.json: %s", err)
         return []
 
@@ -210,6 +205,10 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             current_weather = self._parse_current_weather(current_raw)
             hourly_forecast, daily_forecast = self._parse_forecast(forecast_raw)
 
+            if not hourly_forecast and self._last_valid_data is not None:
+                hourly_forecast = self._last_valid_data.get("hourly_forecast", [])
+                daily_forecast = self._last_valid_data.get("daily_forecast", [])
+
             data = {
                 "current": current_weather,
                 "hourly_forecast": hourly_forecast,
@@ -248,7 +247,7 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 # Decode using cp1252 to preserve Spanish characters
                 return zip_file.read(names[0]).decode("cp1252", errors="ignore")
 
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise UpdateFailed(f"Timeout while downloading {label} from SMN") from err
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"HTTP error downloading {label}: {err}") from err
@@ -402,17 +401,18 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 continue
 
             # Detect station header (station name line followed by ====)
-            if i + 1 < len(lines) and lines[i + 1].startswith(" =="):
-                if (
-                    not line_str.startswith("=")
-                    and "(DIR" not in line_str
-                    and "FECHA" not in line_str
-                    and not line_str.startswith("*")
-                    and "Hs." not in line_str
-                ):
-                    current_st = normalize_name(line_str)
-                    stations_forecast[current_st] = []
-                    continue
+            if (
+                i + 1 < len(lines)
+                and lines[i + 1].startswith(" ==")
+                and not line_str.startswith("=")
+                and "(DIR" not in line_str
+                and "FECHA" not in line_str
+                and not line_str.startswith("*")
+                and "Hs." not in line_str
+            ):
+                current_st = normalize_name(line_str)
+                stations_forecast[current_st] = []
+                continue
 
             # Detect forecast slot
             m = re.match(
@@ -427,7 +427,7 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 dt = datetime(
                     int(year), month, int(day), int(hour), 0, tzinfo=ARGENTINA_TIMEZONE
                 )
-                utc_iso = dt.astimezone(timezone.utc).isoformat()
+                utc_iso = dt.astimezone(UTC).isoformat()
 
                 temp_val = float(temp)
                 precip_val = float(precip)
@@ -497,7 +497,7 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 int(day_str[8:10]),
                 12,
                 0,
-                tzinfo=timezone.utc,
+                tzinfo=UTC,
             )
 
             daily_forecast.append(

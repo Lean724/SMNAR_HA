@@ -1,21 +1,22 @@
 """Unit tests for SMN parsing and geographic helpers."""
 
+from custom_components.smn_ar.const import (
+    ATTR_CONDITION_PARTLYCLOUDY,
+    ATTR_CONDITION_RAINY,
+    ATTR_CONDITION_SUNNY,
+)
 from custom_components.smn_ar.coordinator import (
     haversine_distance,
     map_weather_condition,
     normalize_name,
     wind_direction_to_bearing,
 )
-from custom_components.smn_ar.const import (
-    ATTR_CONDITION_PARTLYCLOUDY,
-    ATTR_CONDITION_RAINY,
-    ATTR_CONDITION_SUNNY,
-)
 
 
 def test_normalize_station_names() -> None:
     assert normalize_name("Aeroparque Jorge Newbery (AERO)") == "AEROPARQUE JORGE NEWBERY"
     assert normalize_name("  Córdoba_Aero  ") == "CORDOBA"
+    assert normalize_name("MERCEDES AERO (CTES)") == "MERCEDES"
     assert normalize_name("") == ""
 
 

@@ -1,29 +1,24 @@
 """Unit tests for SMN Argentina integration."""
-import os
 import json
-import pytest
+import os
 import sys
 from unittest.mock import MagicMock
 
 # Add custom_components to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from custom_components.smn_ar.config_flow import get_station_options
 from custom_components.smn_ar.coordinator import (
+    SMNDataUpdateCoordinator,
+    find_closest_station,
     haversine_distance,
+    load_stations,
+    map_weather_condition,
     normalize_name,
     wind_direction_to_bearing,
-    load_stations,
-    find_closest_station,
-    map_weather_condition,
-    SMNDataUpdateCoordinator,
 )
-from custom_components.smn_ar.const import (
-    DOMAIN,
-    CONF_STATION,
-    CONF_SCAN_INTERVAL,
-    DEFAULT_SCAN_INTERVAL,
-    CONDITION_TEXT_MAP,
-)
+from custom_components.smn_ar.sensor import SENSOR_DESCRIPTIONS, SMNSensor
+from custom_components.smn_ar.weather import SMNWeather
 
 
 def test_manifest():
@@ -38,7 +33,7 @@ def test_manifest():
     assert manifest["name"] == "Servicio Meteorológico Nacional (Argentina)"
     assert manifest["config_flow"] is True
     assert manifest["codeowners"] == ["@Lean724"]
-    assert manifest["version"] == "1.0.1"
+    assert manifest["version"] == "1.0.2"
     assert manifest["iot_class"] == "cloud_polling"
 
 
@@ -170,3 +165,55 @@ def test_parse_forecast():
     assert daily[0]["precipitation"] == 2.5
     assert daily[0]["native_precipitation"] == 2.5
     assert "+00:00" in daily[0]["datetime"]
+
+
+def test_entities_and_config_options():
+    """Test weather entity, sensor entities, and station options helper."""
+    options = get_station_options()
+    assert "AEROPARQUE AERO" in options
+
+    hass = MagicMock()
+    entry = MagicMock()
+    coord = SMNDataUpdateCoordinator(hass, entry, "AEROPARQUE AERO")
+    coord.data = {
+        "current": {
+            "station_name": "Aeroparque Buenos Aires",
+            "date": "28-octubre-2026",
+            "time": "10:00",
+            "description": "Despejado",
+            "condition": "sunny",
+            "temperature": 21.5,
+            "apparent_temperature": 21.0,
+            "humidity": 55.0,
+            "wind_speed": 14.0,
+            "wind_direction": "Norte",
+            "wind_bearing": 0,
+            "pressure": 1016.2,
+            "visibility": 15.0,
+        },
+        "hourly_forecast": [],
+        "daily_forecast": [],
+        "station": coord._station_info,
+    }
+
+    weather_entity = SMNWeather(coord, entry)
+    assert weather_entity.condition == "sunny"
+    assert weather_entity.native_temperature == 21.5
+    assert weather_entity.native_apparent_temperature == 21.0
+    assert weather_entity.humidity == 55.0
+    assert weather_entity.native_pressure == 1016.2
+    assert weather_entity.native_wind_speed == 14.0
+    assert weather_entity.wind_bearing == 0
+    assert weather_entity.native_visibility == 15.0
+
+    sensors = {
+        desc.key: SMNSensor(coord, entry, desc) for desc in SENSOR_DESCRIPTIONS
+    }
+    assert sensors["temperature"].native_value == 21.5
+    assert sensors["apparent_temperature"].native_value == 21.0
+    assert sensors["humidity"].native_value == 55.0
+    assert sensors["pressure"].native_value == 1016.2
+    assert sensors["wind_speed"].native_value == 14.0
+    assert sensors["wind_direction"].native_value == "Norte"
+    assert sensors["visibility"].native_value == 15.0
+    assert sensors["description"].native_value == "Despejado"
