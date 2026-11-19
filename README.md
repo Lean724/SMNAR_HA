@@ -4,7 +4,7 @@
 
 # Servicio Meteorológico Nacional (SMN Argentina) para Home Assistant (Integración independiente)
 
-Integración para Home Assistant que ofrece el estado del tiempo y pronóstico del Servicio Meteorológico Nacional (SMN) argentino.
+Integración de **Home Assistant para el clima de Argentina**. Consulta las condiciones actuales y el pronóstico meteorológico del **Servicio Meteorológico Nacional (SMN)** mediante sus datos abiertos, con selección automática de estaciones meteorológicas cercanas.
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/default)
 [![GitHub Release](https://img.shields.io/github/v/release/Lean724/SMNAR_HA?style=for-the-badge)](https://github.com/Lean724/SMNAR_HA/releases)
