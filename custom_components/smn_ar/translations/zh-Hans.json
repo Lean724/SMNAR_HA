@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "阿根廷国家气象局 (SMN)",
+        "description": "选择 SMN 气象站以监测当前天气状况和 5 天天气预报。",
+        "data": {
+          "station": "气象站",
+          "scan_interval": "更新间隔（秒）",
+          "fallback_weather_entity": "备用天气实体（可选）",
+          "enable_open_meteo_fallback": "启用 Open-Meteo 自动备用数据",
+          "stale_threshold_hours": "SMN 数据过期阈值（小时）"
+        },
+        "data_description": {
+          "fallback_weather_entity": "当 SMN 报告过期或缺失时使用的可选 Home Assistant 天气实体。",
+          "enable_open_meteo_fallback": "当 SMN 报告过期且没有可用的备用实体时，自动查询 Open-Meteo。",
+          "stale_threshold_hours": "超过该小时数后，SMN 气象站报告将被视为过期。"
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "不能选择属于此 SMN 集成实例的天气实体。"
+    },
+    "abort": {
+      "already_configured": "此气象站已在 Home Assistant 中配置。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SMN 配置选项",
+        "description": "修改所选气象站、更新频率或备用策略。",
+        "data": {
+          "station": "气象站",
+          "scan_interval": "更新间隔（秒）",
+          "fallback_weather_entity": "备用天气实体（可选）",
+          "enable_open_meteo_fallback": "启用 Open-Meteo 自动备用数据",
+          "stale_threshold_hours": "SMN 数据过期阈值（小时）"
+        },
+        "data_description": {
+          "fallback_weather_entity": "当 SMN 报告过期或缺失时使用的可选 Home Assistant 天气实体。",
+          "enable_open_meteo_fallback": "当 SMN 报告过期且没有可用的备用实体时，自动查询 Open-Meteo。",
+          "stale_threshold_hours": "超过该小时数后，SMN 气象站报告将被视为过期。"
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "不能选择属于此 SMN 集成实例的天气实体。"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "温度"
+      },
+      "apparent_temperature": {
+        "name": "体感温度"
+      },
+      "humidity": {
+        "name": "湿度"
+      },
+      "pressure": {
+        "name": "气压"
+      },
+      "wind_speed": {
+        "name": "风速"
+      },
+      "wind_direction": {
+        "name": "风向"
+      },
+      "visibility": {
+        "name": "能见度"
+      },
+      "description": {
+        "name": "当前天气状况"
+      }
+    }
+  }
+}

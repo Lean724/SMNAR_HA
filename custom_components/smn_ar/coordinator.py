@@ -10,7 +10,7 @@ import os
 import re
 import unicodedata
 import zipfile
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -20,6 +20,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    ARGENTINA_TIMEZONE,
+    ATTR_CONDITION_CLEAR_NIGHT,
     ATTR_CONDITION_PARTLYCLOUDY,
     ATTR_CONDITION_POURING,
     ATTR_CONDITION_RAINY,
@@ -27,18 +29,29 @@ from .const import (
     ATTR_CONDITION_SUNNY,
     ATTR_CONDITION_WINDY,
     CONDITION_TEXT_MAP,
+    DEFAULT_ENABLE_OPEN_METEO_FALLBACK,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_STALE_THRESHOLD_HOURS,
     DEFAULT_TIMEOUT,
     MONTHS_MAP,
+    SOURCE_CACHE,
+    SOURCE_SMN,
+    SPANISH_MONTHS_FULL,
+    ST_SOURCE_SMN,
+    ST_SOURCE_TEMPERATURE_FALLBACK,
     STATION_ALIASES,
     URL_CURRENT_WEATHER,
     URL_FORECAST,
 )
+from .fallback import (
+    async_fetch_open_meteo,
+    get_entry_weather_entities,
+    merge_weather_with_fallback,
+    read_fallback_weather_entity,
+    safe_float,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
-# Argentina standard time (UTC-3)
-ARGENTINA_TIMEZONE = timezone(timedelta(hours=-3))
 
 _STATIONS_CACHE: list[dict[str, Any]] | None = None
 
@@ -141,13 +154,92 @@ def find_closest_station(lat: float, lon: float) -> dict[str, Any] | None:
     )
 
 
-def map_weather_condition(description: str | None) -> str:
+def parse_smn_report_datetime(
+    date_str: str | None, time_str: str | None
+) -> datetime | None:
+    """Parse SMN tiepre Spanish date and time strings into Argentina datetime."""
+    if not date_str or not time_str:
+        return None
+    date_match = re.match(
+        r"^\s*(\d{1,2})-([a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+)-(\d{4})\s*$", date_str
+    )
+    time_match = re.match(r"^\s*(\d{1,2}):(\d{2})", time_str)
+    if not date_match or not time_match:
+        return None
+    day_s, month_name, year_s = date_match.groups()
+    hour_s, minute_s = time_match.groups()
+    month = SPANISH_MONTHS_FULL.get(month_name.lower())
+    if month is None:
+        return None
+    try:
+        return datetime(
+            int(year_s),
+            month,
+            int(day_s),
+            int(hour_s),
+            int(minute_s),
+            tzinfo=ARGENTINA_TIMEZONE,
+        )
+    except ValueError:
+        return None
+
+
+def is_report_stale(
+    report_dt: datetime | None,
+    threshold_hours: int = DEFAULT_STALE_THRESHOLD_HOURS,
+    now: datetime | None = None,
+) -> bool:
+    """Return True if an SMN report datetime is missing or older than threshold."""
+    if report_dt is None:
+        return True
+    dt_report = (
+        report_dt.astimezone(ARGENTINA_TIMEZONE)
+        if report_dt.tzinfo
+        else report_dt.replace(tzinfo=ARGENTINA_TIMEZONE)
+    )
+    current_now = now or datetime.now(ARGENTINA_TIMEZONE)
+    dt_now = (
+        current_now.astimezone(ARGENTINA_TIMEZONE)
+        if current_now.tzinfo
+        else current_now.replace(tzinfo=ARGENTINA_TIMEZONE)
+    )
+    return (dt_now - dt_report) >= timedelta(hours=threshold_hours)
+
+
+def is_night_time(
+    hass: HomeAssistant | None, reference_dt: datetime | None = None
+) -> bool:
+    """Determine whether it is currently nighttime via sun.sun or local hour."""
+    states = getattr(hass, "states", None) if hass is not None else None
+    if states is not None:
+        sun_state = states.get("sun.sun")
+        sun_val = getattr(sun_state, "state", None)
+        if isinstance(sun_val, str) and sun_val in (
+            "below_horizon",
+            "above_horizon",
+        ):
+            return sun_val == "below_horizon"
+    if reference_dt is not None:
+        dt_ar = (
+            reference_dt.astimezone(ARGENTINA_TIMEZONE)
+            if reference_dt.tzinfo
+            else reference_dt.replace(tzinfo=ARGENTINA_TIMEZONE)
+        )
+        return dt_ar.hour >= 20 or dt_ar.hour < 6
+    return False
+
+
+def map_weather_condition(
+    description: str | None, *, is_night: bool = False
+) -> str:
     """Map SMN weather description text to Home Assistant condition."""
     if not description:
-        return ATTR_CONDITION_SUNNY
+        return ATTR_CONDITION_CLEAR_NIGHT if is_night else ATTR_CONDITION_SUNNY
     desc_lower = description.lower()
     for key, condition in CONDITION_TEXT_MAP.items():
         if key in desc_lower:
+            if condition == ATTR_CONDITION_SUNNY and is_night:
+                return ATTR_CONDITION_CLEAR_NIGHT
             return condition
     return ATTR_CONDITION_PARTLYCLOUDY
 
@@ -161,6 +253,10 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         entry: ConfigEntry,
         station_name: str,
         scan_interval: int = DEFAULT_SCAN_INTERVAL,
+        *,
+        fallback_entity: str | None = None,
+        enable_open_meteo_fallback: bool = DEFAULT_ENABLE_OPEN_METEO_FALLBACK,
+        stale_threshold_hours: int = DEFAULT_STALE_THRESHOLD_HOURS,
     ) -> None:
         """Initialize the SMN coordinator."""
         self.entry = entry
@@ -170,6 +266,9 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._station_info = self._get_station_metadata(station_name)
         self._session = async_get_clientsession(hass)
         self._last_valid_data: dict[str, Any] | None = None
+        self._fallback_entity = fallback_entity or None
+        self._enable_open_meteo_fallback = enable_open_meteo_fallback
+        self._stale_threshold_hours = stale_threshold_hours
 
         super().__init__(
             hass,
@@ -194,40 +293,194 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "oaci": "",
         }
 
+    def _get_own_weather_entity_ids(self) -> set[str]:
+        """Return weather entity IDs belonging to this config entry."""
+        return get_entry_weather_entities(
+            self.hass, getattr(self.entry, "entry_id", None)
+        )
+
+    def _get_fallback_coordinates(self) -> tuple[float, float] | None:
+        """Resolve station or Home Assistant coordinates for Open-Meteo fallback."""
+        lat = safe_float(self._station_info.get("latitude"))
+        lon = safe_float(self._station_info.get("longitude"))
+        if lat is not None and lon is not None and (lat != 0.0 or lon != 0.0):
+            return lat, lon
+        cfg = getattr(self.hass, "config", None)
+        cfg_lat = safe_float(getattr(cfg, "latitude", None))
+        cfg_lon = safe_float(getattr(cfg, "longitude", None))
+        if (
+            cfg_lat is not None
+            and cfg_lon is not None
+            and (cfg_lat != 0.0 or cfg_lon != 0.0)
+        ):
+            return cfg_lat, cfg_lon
+        return None
+
+    def _fill_missing_smn_fields(
+        self, current_weather: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Fill missing secondary fields on fresh SMN data from B1 if available."""
+        optional_fields = ("humidity", "pressure", "wind_speed", "visibility")
+        needs_fill = any(
+            current_weather.get(field) is None for field in optional_fields
+        ) or (
+            current_weather.get("wind_bearing") is None
+            and not current_weather.get("wind_direction")
+        )
+        if not self._fallback_entity or not needs_fill:
+            return current_weather
+
+        b1_data = read_fallback_weather_entity(
+            self.hass,
+            self._fallback_entity,
+            excluded_entity_ids=self._get_own_weather_entity_ids(),
+            wind_bearing_parser=wind_direction_to_bearing,
+        )
+        if not b1_data:
+            return current_weather
+
+        for field in optional_fields:
+            if current_weather.get(field) is None and b1_data.get(field) is not None:
+                current_weather[field] = b1_data[field]
+
+        if (
+            current_weather.get("wind_bearing") is None
+            and not current_weather.get("wind_direction")
+            and b1_data.get("wind_bearing") is not None
+        ):
+            current_weather["wind_bearing"] = b1_data["wind_bearing"]
+            current_weather["wind_direction"] = b1_data.get("wind_direction", "")
+
+        return current_weather
+
+    async def _resolve_current_weather(
+        self,
+        smn_current: dict[str, Any] | None,
+        current_err: BaseException | None,
+    ) -> dict[str, Any]:
+        """Resolve current weather using fresh SMN or the B1 -> B2 fallback chain."""
+        smn_missing = smn_current is None or smn_current.get("temperature") is None
+        smn_stale = (
+            True
+            if smn_missing
+            else is_report_stale(
+                smn_current.get("report_datetime"), self._stale_threshold_hours
+            )
+        )
+
+        if not smn_stale and not smn_missing and smn_current is not None:
+            current_weather = dict(smn_current)
+            current_weather["smn_stale"] = False
+            current_weather["fallback_active"] = False
+            current_weather["data_source"] = SOURCE_SMN
+            return self._fill_missing_smn_fields(current_weather)
+
+        _LOGGER.debug(
+            "SMN current weather for '%s' is %s; evaluating fallback chain",
+            self.station_name,
+            "missing" if smn_missing else "stale",
+        )
+
+        # Priority 2 (B1): Configured Home Assistant weather entity
+        if self._fallback_entity:
+            b1_data = read_fallback_weather_entity(
+                self.hass,
+                self._fallback_entity,
+                excluded_entity_ids=self._get_own_weather_entity_ids(),
+                wind_bearing_parser=wind_direction_to_bearing,
+            )
+            if b1_data is not None:
+                return merge_weather_with_fallback(
+                    smn_current,
+                    b1_data,
+                    self.station_name,
+                    fallback_entity_id=self._fallback_entity,
+                )
+
+        # Priority 3 (B2): Automatic Open-Meteo fallback
+        if self._enable_open_meteo_fallback:
+            coords = self._get_fallback_coordinates()
+            if coords is not None:
+                b2_data = await async_fetch_open_meteo(
+                    self._session, coords[0], coords[1]
+                )
+                if b2_data is not None:
+                    return merge_weather_with_fallback(
+                        smn_current, b2_data, self.station_name
+                    )
+
+        # Priority 4: Degrade gracefully to stale SMN or cached data
+        if smn_current is not None:
+            degraded = dict(smn_current)
+            degraded["smn_stale"] = True
+            degraded["fallback_active"] = False
+            degraded["data_source"] = SOURCE_SMN
+            return degraded
+
+        if self._last_valid_data is not None and self._last_valid_data.get("current"):
+            cached_current = dict(self._last_valid_data["current"])
+            cached_current["data_source"] = SOURCE_CACHE
+            cached_current["smn_stale"] = True
+            cached_current["fallback_active"] = False
+            return cached_current
+
+        raise UpdateFailed(
+            f"Error communicating with SMN API: {current_err or 'station data unavailable'}"
+        )
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch and parse current weather and forecast data from SMN Open Data."""
-        try:
-            current_raw, forecast_raw = await asyncio.gather(
-                self._fetch_zip_text(URL_CURRENT_WEATHER, "Current Weather"),
-                self._fetch_zip_text(URL_FORECAST, "Forecast"),
+        current_res, forecast_res = await asyncio.gather(
+            self._fetch_zip_text(URL_CURRENT_WEATHER, "Current Weather"),
+            self._fetch_zip_text(URL_FORECAST, "Forecast"),
+            return_exceptions=True,
+        )
+
+        if isinstance(current_res, asyncio.CancelledError):
+            raise current_res
+        if isinstance(forecast_res, asyncio.CancelledError):
+            raise forecast_res
+
+        hourly_forecast: list[dict[str, Any]] = []
+        daily_forecast: list[dict[str, Any]] = []
+        if isinstance(forecast_res, BaseException):
+            _LOGGER.warning(
+                "Error updating SMN forecast (%s): %s",
+                self.station_name,
+                forecast_res,
             )
+        else:
+            hourly_forecast, daily_forecast = self._parse_forecast(forecast_res)
 
-            current_weather = self._parse_current_weather(current_raw)
-            hourly_forecast, daily_forecast = self._parse_forecast(forecast_raw)
+        if not hourly_forecast and self._last_valid_data is not None:
+            hourly_forecast = self._last_valid_data.get("hourly_forecast", [])
+            daily_forecast = self._last_valid_data.get("daily_forecast", [])
 
-            if not hourly_forecast and self._last_valid_data is not None:
-                hourly_forecast = self._last_valid_data.get("hourly_forecast", [])
-                daily_forecast = self._last_valid_data.get("daily_forecast", [])
+        current_err: BaseException | None = None
+        if isinstance(current_res, BaseException):
+            current_err = current_res
+            _LOGGER.warning(
+                "Error updating SMN current weather (%s): %s",
+                self.station_name,
+                current_res,
+            )
+            smn_current = None
+        else:
+            smn_current = self._parse_current_weather(current_res)
 
-            data = {
-                "current": current_weather,
-                "hourly_forecast": hourly_forecast,
-                "daily_forecast": daily_forecast,
-                "station": self._station_info,
-            }
+        current_weather = await self._resolve_current_weather(
+            smn_current, current_err
+        )
 
-            self._last_valid_data = data
-            return data
+        data = {
+            "current": current_weather,
+            "hourly_forecast": hourly_forecast,
+            "daily_forecast": daily_forecast,
+            "station": self._station_info,
+        }
 
-        except Exception as err:
-            if self._last_valid_data is not None:
-                _LOGGER.warning(
-                    "Error updating SMN data (%s), returning last valid cache: %s",
-                    self.station_name,
-                    err,
-                )
-                return self._last_valid_data
-            raise UpdateFailed(f"Error communicating with SMN API: {err}") from err
+        self._last_valid_data = data
+        return data
 
     async def _fetch_zip_text(self, url: str, label: str) -> str:
         """Download and extract first text file from an SMN open data zip."""
@@ -244,8 +497,11 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 names = zip_file.namelist()
                 if not names:
                     raise UpdateFailed(f"Empty zip archive received for {label}")
-                # Decode using cp1252 to preserve Spanish characters
-                return zip_file.read(names[0]).decode("cp1252", errors="ignore")
+                raw_bytes = zip_file.read(names[0])
+                try:
+                    return raw_bytes.decode("utf-8")
+                except UnicodeDecodeError:
+                    return raw_bytes.decode("cp1252", errors="replace")
 
         except TimeoutError as err:
             raise UpdateFailed(f"Timeout while downloading {label} from SMN") from err
@@ -285,8 +541,8 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         return best_match
 
-    def _parse_current_weather(self, text: str) -> dict[str, Any]:
-        """Parse tiepre text into current weather dictionary."""
+    def _parse_current_weather(self, text: str) -> dict[str, Any] | None:
+        """Parse tiepre text into current weather dictionary, or None if missing."""
         stations_data: dict[str, dict[str, Any]] = {}
 
         for line in text.splitlines():
@@ -314,8 +570,9 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             wind_speed = None
             wind_dir_str = ""
             if wind_parts:
-                if wind_parts[-1].replace(".", "").isdigit():
-                    wind_speed = float(wind_parts[-1])
+                parsed_speed = safe_float(wind_parts[-1])
+                if parsed_speed is not None:
+                    wind_speed = parsed_speed
                     wind_dir_str = " ".join(wind_parts[:-1])
                 elif "calma" in wind_str.lower():
                     wind_speed = 0.0
@@ -323,28 +580,32 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             # Parse visibility
             vis_val = None
-            vis_m = re.search(r"([\d\.]+)\s*km", vis_str, re.IGNORECASE)
-            if vis_m:
-                vis_val = float(vis_m.group(1))
+            vis_km = re.search(r"([\d\.,]+)\s*km\b", vis_str, re.IGNORECASE)
+            if vis_km:
+                vis_val = safe_float(vis_km.group(1))
+            else:
+                vis_m = re.search(r"([\d\.,]+)\s*m\b", vis_str, re.IGNORECASE)
+                if vis_m:
+                    vis_meters = safe_float(vis_m.group(1))
+                    if vis_meters is not None:
+                        vis_val = round(vis_meters / 1000.0, 2)
 
-            temp = (
-                float(temp_str)
-                if temp_str and temp_str != "No se calcula"
-                else None
-            )
-            apparent_temp = (
-                float(st_str) if st_str and st_str != "No se calcula" else None
-            )
-            humidity = (
-                float(hum_str)
-                if hum_str and hum_str.replace(".", "").isdigit()
-                else None
-            )
-            pressure = (
-                float(press_str)
-                if press_str and press_str.replace(".", "").isdigit()
-                else None
-            )
+            temp = safe_float(temp_str)
+            raw_st = safe_float(st_str)
+            if raw_st is not None:
+                apparent_temp: float | None = raw_st
+                st_source: str | None = ST_SOURCE_SMN
+            elif temp is not None:
+                apparent_temp = temp
+                st_source = ST_SOURCE_TEMPERATURE_FALLBACK
+            else:
+                apparent_temp = None
+                st_source = None
+
+            humidity = safe_float(hum_str)
+            pressure = safe_float(press_str)
+            report_dt = parse_smn_report_datetime(date_str, time_str)
+            is_night = is_night_time(self.hass, report_dt)
 
             norm_k = normalize_name(st_name)
             stations_data[norm_k] = {
@@ -352,15 +613,22 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "date": date_str,
                 "time": time_str,
                 "description": desc,
-                "condition": map_weather_condition(desc),
+                "condition": map_weather_condition(desc, is_night=is_night),
                 "temperature": temp,
                 "apparent_temperature": apparent_temp,
+                "apparent_temperature_source": st_source,
                 "humidity": humidity,
                 "wind_speed": wind_speed,
                 "wind_direction": wind_dir_str,
                 "wind_bearing": wind_direction_to_bearing(wind_dir_str),
                 "pressure": pressure,
                 "visibility": vis_val,
+                "report_datetime": report_dt,
+                "data_source": SOURCE_SMN,
+                "fallback_active": False,
+                "smn_stale": False,
+                "smn_last_report_date": date_str,
+                "smn_last_report_time": time_str,
             }
 
         matched_key = self._find_matching_key(stations_data)
@@ -373,19 +641,7 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._norm_station,
             list(stations_data.keys())[:10],
         )
-        return {
-            "station_name": self.station_name,
-            "description": "N/D",
-            "condition": ATTR_CONDITION_PARTLYCLOUDY,
-            "temperature": None,
-            "apparent_temperature": None,
-            "humidity": None,
-            "wind_speed": None,
-            "wind_direction": None,
-            "wind_bearing": None,
-            "pressure": None,
-            "visibility": None,
-        }
+        return None
 
     def _parse_forecast(
         self, text: str
@@ -429,9 +685,11 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 )
                 utc_iso = dt.astimezone(UTC).isoformat()
 
-                temp_val = float(temp)
-                precip_val = float(precip)
-                wind_spd_val = float(wind_spd)
+                temp_val = safe_float(temp)
+                precip_val = safe_float(precip)
+                wind_spd_val = safe_float(wind_spd)
+                if temp_val is None or precip_val is None or wind_spd_val is None:
+                    continue
                 wind_dir_val = int(wind_dir)
 
                 # Assign condition based on precipitation and temperature
@@ -467,10 +725,13 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if matched_key and matched_key in stations_forecast:
             hourly_forecast = stations_forecast[matched_key]
 
-        # Aggregate hourly forecast into daily forecast
+        # Aggregate hourly forecast into daily forecast using Argentina local date (UTC-3)
         daily_groups: dict[str, list[dict[str, Any]]] = {}
         for slot in hourly_forecast:
-            day_str = slot["datetime"][:10]
+            slot_dt_ar = datetime.fromisoformat(slot["datetime"]).astimezone(
+                ARGENTINA_TIMEZONE
+            )
+            day_str = slot_dt_ar.strftime("%Y-%m-%d")
             if day_str not in daily_groups:
                 daily_groups[day_str] = []
             daily_groups[day_str].append(slot)

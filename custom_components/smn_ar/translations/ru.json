@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Национальная метеорологическая служба (Аргентина)",
+        "description": "Выберите метеостанцию SMN для отслеживания текущих погодных условий и прогноза на 5 дней.",
+        "data": {
+          "station": "Метеостанция",
+          "scan_interval": "Интервал обновления (секунды)",
+          "fallback_weather_entity": "Резервная погодная сущность (необязательно)",
+          "enable_open_meteo_fallback": "Включить автоматический резерв Open-Meteo",
+          "stale_threshold_hours": "Порог устаревания SMN (часы)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Необязательная погодная сущность Home Assistant, используемая при устаревании или отсутствии сводок SMN.",
+          "enable_open_meteo_fallback": "Автоматически запрашивать Open-Meteo, когда данные SMN устарели и резервная сущность недоступна.",
+          "stale_threshold_hours": "Количество часов, по истечении которых сводка станции SMN считается устаревшей."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Нельзя выбрать погодную сущность, принадлежащую этой же интеграции SMN."
+    },
+    "abort": {
+      "already_configured": "Эта метеостанция уже настроена в Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметры конфигурации SMN",
+        "description": "Измените выбранную метеостанцию, частоту обновления или параметры резервирования.",
+        "data": {
+          "station": "Метеостанция",
+          "scan_interval": "Интервал обновления (секунды)",
+          "fallback_weather_entity": "Резервная погодная сущность (необязательно)",
+          "enable_open_meteo_fallback": "Включить автоматический резерв Open-Meteo",
+          "stale_threshold_hours": "Порог устаревания SMN (часы)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Необязательная погодная сущность Home Assistant, используемая при устаревании или отсутствии сводок SMN.",
+          "enable_open_meteo_fallback": "Автоматически запрашивать Open-Meteo, когда данные SMN устарели и резервная сущность недоступна.",
+          "stale_threshold_hours": "Количество часов, по истечении которых сводка станции SMN считается устаревшей."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Нельзя выбрать погодную сущность, принадлежащую этой же интеграции SMN."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Температура"
+      },
+      "apparent_temperature": {
+        "name": "Ощущается как"
+      },
+      "humidity": {
+        "name": "Влажность"
+      },
+      "pressure": {
+        "name": "Атмосферное давление"
+      },
+      "wind_speed": {
+        "name": "Скорость ветра"
+      },
+      "wind_direction": {
+        "name": "Направление ветра"
+      },
+      "visibility": {
+        "name": "Видимость"
+      },
+      "description": {
+        "name": "Текущее состояние"
+      }
+    }
+  }
+}

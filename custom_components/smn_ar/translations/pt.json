@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Serviço Meteorológico Nacional (Argentina)",
+        "description": "Selecione a estação meteorológica do SMN para monitorar as condições atuais e a previsão para 5 dias.",
+        "data": {
+          "station": "Estação meteorológica",
+          "scan_interval": "Intervalo de atualização (segundos)",
+          "fallback_weather_entity": "Entidade climática alternativa (opcional)",
+          "enable_open_meteo_fallback": "Ativar contingência automática com Open-Meteo",
+          "stale_threshold_hours": "Limite de desatualização do SMN (horas)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Entidade climática opcional do Home Assistant usada quando os boletins do SMN estiverem desatualizados ou ausentes.",
+          "enable_open_meteo_fallback": "Consultar o Open-Meteo automaticamente quando os boletins do SMN estiverem desatualizados e não houver entidade alternativa disponível.",
+          "stale_threshold_hours": "Horas após as quais um boletim de estação do SMN é considerado desatualizado."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Não é possível selecionar uma entidade climática pertencente a esta mesma integração do SMN."
+    },
+    "abort": {
+      "already_configured": "Esta estação meteorológica já está configurada no Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções de configuração do SMN",
+        "description": "Modifique a estação meteorológica selecionada, a frequência de atualização ou o comportamento de contingência.",
+        "data": {
+          "station": "Estação meteorológica",
+          "scan_interval": "Intervalo de atualização (segundos)",
+          "fallback_weather_entity": "Entidade climática alternativa (opcional)",
+          "enable_open_meteo_fallback": "Ativar contingência automática com Open-Meteo",
+          "stale_threshold_hours": "Limite de desatualização do SMN (horas)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Entidade climática opcional do Home Assistant usada quando os boletins do SMN estiverem desatualizados ou ausentes.",
+          "enable_open_meteo_fallback": "Consultar o Open-Meteo automaticamente quando os boletins do SMN estiverem desatualizados e não houver entidade alternativa disponível.",
+          "stale_threshold_hours": "Horas após as quais um boletim de estação do SMN é considerado desatualizado."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Não é possível selecionar uma entidade climática pertencente a esta mesma integração do SMN."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "apparent_temperature": {
+        "name": "Sensação térmica"
+      },
+      "humidity": {
+        "name": "Umidade"
+      },
+      "pressure": {
+        "name": "Pressão atmosférica"
+      },
+      "wind_speed": {
+        "name": "Velocidade do vento"
+      },
+      "wind_direction": {
+        "name": "Direção do vento"
+      },
+      "visibility": {
+        "name": "Visibilidade"
+      },
+      "description": {
+        "name": "Condição atual"
+      }
+    }
+  }
+}

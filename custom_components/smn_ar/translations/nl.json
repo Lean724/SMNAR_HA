@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nationale Meteorologische Dienst (Argentinië)",
+        "description": "Selecteer het SMN-weerstation om de actuele omstandigheden en 5-daagse weersverwachting te volgen.",
+        "data": {
+          "station": "Weerstation",
+          "scan_interval": "Vernieuwingsinterval (seconden)",
+          "fallback_weather_entity": "Reserve-weerentiteit (optioneel)",
+          "enable_open_meteo_fallback": "Automatische Open-Meteo-terugval inschakelen",
+          "stale_threshold_hours": "SMN-verouderingsdrempel (uren)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Optionele Home Assistant-weerentiteit die wordt gebruikt wanneer SMN-rapporten verouderd zijn of ontbreken.",
+          "enable_open_meteo_fallback": "Open-Meteo automatisch raadplegen wanneer SMN-rapporten verouderd zijn en er geen reserve-entiteit beschikbaar is.",
+          "stale_threshold_hours": "Aantal uren waarna een SMN-stationsrapport als verouderd wordt beschouwd."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Kan geen weerentiteit selecteren die bij deze zelfde SMN-integratie hoort."
+    },
+    "abort": {
+      "already_configured": "Dit weerstation is al geconfigureerd in Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SMN-configuratieopties",
+        "description": "Wijzig het geselecteerde weerstation, de vernieuwingsfrequentie of het terugvalgedrag.",
+        "data": {
+          "station": "Weerstation",
+          "scan_interval": "Vernieuwingsinterval (seconden)",
+          "fallback_weather_entity": "Reserve-weerentiteit (optioneel)",
+          "enable_open_meteo_fallback": "Automatische Open-Meteo-terugval inschakelen",
+          "stale_threshold_hours": "SMN-verouderingsdrempel (uren)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Optionele Home Assistant-weerentiteit die wordt gebruikt wanneer SMN-rapporten verouderd zijn of ontbreken.",
+          "enable_open_meteo_fallback": "Open-Meteo automatisch raadplegen wanneer SMN-rapporten verouderd zijn en er geen reserve-entiteit beschikbaar is.",
+          "stale_threshold_hours": "Aantal uren waarna een SMN-stationsrapport als verouderd wordt beschouwd."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Kan geen weerentiteit selecteren die bij deze zelfde SMN-integratie hoort."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperatuur"
+      },
+      "apparent_temperature": {
+        "name": "Gevoelstemperatuur"
+      },
+      "humidity": {
+        "name": "Luchtvochtigheid"
+      },
+      "pressure": {
+        "name": "Luchtdruk"
+      },
+      "wind_speed": {
+        "name": "Windsnelheid"
+      },
+      "wind_direction": {
+        "name": "Windrichting"
+      },
+      "visibility": {
+        "name": "Zicht"
+      },
+      "description": {
+        "name": "Huidige weersomstandigheid"
+      }
+    }
+  }
+}

@@ -6,9 +6,20 @@
         "description": "Seleccione la estación meteorológica del SMN para monitorear el estado actual y el pronóstico extendido a 5 días.",
         "data": {
           "station": "Estación meteorológica",
-          "scan_interval": "Intervalo de actualización (segundos)"
+          "scan_interval": "Intervalo de actualización (segundos)",
+          "fallback_weather_entity": "Entidad climática de respaldo (opcional)",
+          "enable_open_meteo_fallback": "Habilitar respaldo automático con Open-Meteo",
+          "stale_threshold_hours": "Umbral de antigüedad del SMN (horas)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Entidad weather.* opcional de Home Assistant para cubrir baches cuando el reporte del SMN esté desactualizado o ausente.",
+          "enable_open_meteo_fallback": "Consultar Open-Meteo automáticamente cuando el reporte del SMN esté desactualizado y no haya entidad de respaldo disponible.",
+          "stale_threshold_hours": "Horas tras las cuales un reporte del SMN se considera desactualizado."
         }
       }
+    },
+    "error": {
+      "invalid_fallback_entity": "No puede seleccionar una entidad climática perteneciente a esta misma integración de SMN."
     },
     "abort": {
       "already_configured": "Esta estación meteorológica ya se encuentra configurada en Home Assistant."
@@ -18,12 +29,23 @@
     "step": {
       "init": {
         "title": "Opciones de configuración de SMN",
-        "description": "Modifique la estación meteorológica seleccionada o la frecuencia de actualización.",
+        "description": "Modifique la estación meteorológica seleccionada, la frecuencia de actualización o las opciones de respaldo.",
         "data": {
           "station": "Estación meteorológica",
-          "scan_interval": "Intervalo de actualización (segundos)"
+          "scan_interval": "Intervalo de actualización (segundos)",
+          "fallback_weather_entity": "Entidad climática de respaldo (opcional)",
+          "enable_open_meteo_fallback": "Habilitar respaldo automático con Open-Meteo",
+          "stale_threshold_hours": "Umbral de antigüedad del SMN (horas)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Entidad weather.* opcional de Home Assistant para cubrir baches cuando el reporte del SMN esté desactualizado o ausente.",
+          "enable_open_meteo_fallback": "Consultar Open-Meteo automáticamente cuando el reporte del SMN esté desactualizado y no haya entidad de respaldo disponible.",
+          "stale_threshold_hours": "Horas tras las cuales un reporte del SMN se considera desactualizado."
         }
       }
+    },
+    "error": {
+      "invalid_fallback_entity": "No puede seleccionar una entidad climática perteneciente a esta misma integración de SMN."
     }
   },
   "entity": {

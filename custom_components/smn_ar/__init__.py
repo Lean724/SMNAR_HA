@@ -8,9 +8,14 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .const import (
+    CONF_ENABLE_OPEN_METEO_FALLBACK,
+    CONF_FALLBACK_ENTITY,
     CONF_SCAN_INTERVAL,
+    CONF_STALE_THRESHOLD_HOURS,
     CONF_STATION,
+    DEFAULT_ENABLE_OPEN_METEO_FALLBACK,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_STALE_THRESHOLD_HOURS,
     DOMAIN,
 )
 from .coordinator import SMNDataUpdateCoordinator
@@ -27,12 +32,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         CONF_SCAN_INTERVAL,
         entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
     )
+    fallback_entity = (
+        entry.options[CONF_FALLBACK_ENTITY]
+        if CONF_FALLBACK_ENTITY in entry.options
+        else entry.data.get(CONF_FALLBACK_ENTITY)
+    )
+    enable_open_meteo = entry.options.get(
+        CONF_ENABLE_OPEN_METEO_FALLBACK,
+        entry.data.get(
+            CONF_ENABLE_OPEN_METEO_FALLBACK, DEFAULT_ENABLE_OPEN_METEO_FALLBACK
+        ),
+    )
+    stale_threshold_hours = entry.options.get(
+        CONF_STALE_THRESHOLD_HOURS,
+        entry.data.get(CONF_STALE_THRESHOLD_HOURS, DEFAULT_STALE_THRESHOLD_HOURS),
+    )
 
     coordinator = SMNDataUpdateCoordinator(
         hass=hass,
         entry=entry,
         station_name=station,
         scan_interval=scan_interval,
+        fallback_entity=fallback_entity,
+        enable_open_meteo_fallback=enable_open_meteo,
+        stale_threshold_hours=stale_threshold_hours,
     )
 
     await coordinator.async_config_entry_first_refresh()

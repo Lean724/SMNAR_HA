@@ -16,23 +16,28 @@ Integración de **Home Assistant para el clima de Argentina**. Consulta las cond
 
 ## Características
 
-* **Entidad de Clima (`weather`)**: Cumple con los estándares actuales de Home Assistant con soporte de pronóstico diario y horario (`async_forecast_daily` y `async_forecast_hourly`).
+* **Entidad de Clima (`weather`)**: Cumple con los estándares actuales de Home Assistant con soporte de pronóstico diario y horario (`async_forecast_daily` y `async_forecast_hourly`) e icono nocturno (`clear-night`) cuando está despejado de noche.
 * **Condiciones en Tiempo Real**:
   * Temperatura actual (°C).
-  * Sensación térmica (°C).
+  * Sensación térmica (°C), con respaldo automático a la temperatura actual cuando el SMN informa `"No se calcula"` en temperaturas templadas.
   * Humedad relativa (%).
   * Presión atmosférica al nivel de la estación (hPa).
   * Viento (velocidad en km/h, dirección y grados).
   * Visibilidad (km).
   * Condición meteorológica oficial con icono dinámico.
+* **Continuidad Nocturna y Respaldo Híbrido (Anti-Baches)**:
+  * Detecta automáticamente cuándo el reporte de la estación SMN supera el umbral de antigüedad configurable (por defecto `3` horas, frecuente en estaciones que cierran de noche) o falta en `tiepre`.
+  * **Prioridad 1 (SMN vigente)**: Usa los datos oficiales abiertos del SMN.
+  * **Prioridad 2 (Entidad `weather.*` opcional)**: Si configurás otra entidad climática en Home Assistant (Google Weather, Met.no, Weather.com, etc.), cubre el bache convirtiendo unidades automáticamente.
+  * **Prioridad 3 (Open-Meteo automático)**: Si no hay entidad de respaldo disponible y está habilitado (activo por defecto), consulta Open-Meteo sin necesidad de API keys usando presión al nivel de la superficie (`surface_pressure`) para mantener coherencia con el SMN.
 * **Pronóstico Extendido a 5 Días**:
   * Pronóstico horario (cada 3 horas): temperatura, precipitación acumulada (mm), viento y condición.
-  * Pronóstico diario: temperaturas máximas y mínimas estimadas, precipitación total estimada y condición predominante.
+  * Pronóstico diario: temperaturas máximas y mínimas estimadas agrupadas por día local de Argentina (`UTC-3`), precipitación total estimada y condición predominante.
 * **Cobertura Nacional**: Más de 118 estaciones meteorológicas oficiales en todas las provincias de Argentina y bases antárticas.
 * **Detección Automática de Cercanía**: Calcula por geolocalización (fórmula Haversine) la estación oficial más cercana a las coordenadas de Home Assistant.
-* **Sensores Individuales**: 8 entidades tipo `sensor` independientes para Temperatura, Sensación Térmica, Humedad, Presión, Velocidad del Viento, Dirección del Viento, Visibilidad y Condición Actual para tableros y automatizaciones.
-* **Conexión Directa y Confiable**: Consume los datos oficiales abiertos del SMN sin necesidad de claves de acceso, tokens temporales ni intermediarios.
-* **Configuración Gráfica**: Config Flow y Options Flow para instalar y modificar la estación o frecuencia de actualización desde la interfaz.
+* **Sensores Individuales**: 8 entidades tipo `sensor` independientes para Temperatura, Sensación Térmica, Humedad, Presión, Velocidad del Viento, Dirección del Viento, Visibilidad y Condición Actual para tableros y automatizaciones, con atributos de diagnóstico (`fuente_datos`, `respaldo_activo`, `sensacion_termica_fuente`).
+* **Conexión Directa y Confiable**: Consume los datos oficiales abiertos del SMN sin necesidad de claves de acceso ni scraping.
+* **Configuración Gráfica y Multilingüe**: Config Flow y Options Flow en 10 idiomas para configurar estación, intervalo, umbral de antigüedad y opciones de respaldo.
 
 ---
 
@@ -78,9 +83,10 @@ Integración de **Home Assistant para el clima de Argentina**. Consulta las cond
 2. Busca **Servicio Meteorológico Nacional (Argentina)**.
 3. El asistente preseleccionará la estación más cercana según las coordenadas de tu hogar. Puedes confirmarla o seleccionar cualquier otra estación de la lista.
 4. Define el intervalo de actualización deseado (por defecto: 1800 segundos / 30 minutos).
-5. Confirma para crear el dispositivo con su entidad de clima y sensores asociados.
+5. *(Opcional)* Selecciona una entidad climática de respaldo en Home Assistant (`weather.*`), ajusta el umbral de antigüedad de reportes SMN (por defecto: `3` horas) y decide si mantener activo el respaldo automático con Open-Meteo.
+6. Confirma para crear el dispositivo con su entidad de clima y sensores asociados.
 
-> Para cambiar la estación o el intervalo más adelante, accede a **Ajustes** -> **Dispositivos y servicios** -> **SMN Argentina** -> **Configurar**.
+> Para cambiar la estación, el intervalo o las opciones de respaldo más adelante, accede a **Ajustes** -> **Dispositivos y servicios** -> **SMN Argentina** -> **Configurar**.
 
 ---
 
@@ -124,7 +130,7 @@ name: SMN Pronóstico por Horas
 
 ## Fuente de Datos y Atribución
 
-Los datos meteorológicos son provistos por el **Servicio Meteorológico Nacional** de la República Argentina a través de su plataforma de datos abiertos.
+Los datos meteorológicos son provistos por el **Servicio Meteorológico Nacional** de la República Argentina a través de su plataforma de datos abiertos. Cuando una estación del SMN presenta demoras o interrupciones nocturnas y el respaldo automático está habilitado sin entidad local asignada, se utilizan datos abiertos de [Open-Meteo](https://open-meteo.com/) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)).
 
 Este desarrollo es una integración comunitaria de código abierto para Home Assistant y no posee afiliación oficial con el Servicio Meteorológico Nacional.
 

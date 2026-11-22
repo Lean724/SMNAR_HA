@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nationaler Wetterdienst (Argentinien)",
+        "description": "Wählen Sie die SMN-Wetterstation aus, um aktuelle Bedingungen und die 5-Tage-Vorhersage zu überwachen.",
+        "data": {
+          "station": "Wetterstation",
+          "scan_interval": "Aktualisierungsintervall (Sekunden)",
+          "fallback_weather_entity": "Fallback-Wetterentität (optional)",
+          "enable_open_meteo_fallback": "Automatischen Open-Meteo-Fallback aktivieren",
+          "stale_threshold_hours": "SMN-Veralterungsschwelle (Stunden)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Optionale Home-Assistant-Wetterentität, die verwendet wird, wenn SMN-Berichte veraltet sind oder fehlen.",
+          "enable_open_meteo_fallback": "Open-Meteo automatisch abfragen, wenn SMN-Berichte veraltet sind und keine Fallback-Entität verfügbar ist.",
+          "stale_threshold_hours": "Anzahl der Stunden, nach denen ein SMN-Stationsbericht als veraltet gilt."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Eine Wetterentität derselben SMN-Integration kann nicht ausgewählt werden."
+    },
+    "abort": {
+      "already_configured": "Diese Wetterstation ist bereits in Home Assistant konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SMN-Konfigurationsoptionen",
+        "description": "Ändern Sie die ausgewählte Wetterstation, die Aktualisierungsfrequenz oder das Fallback-Verhalten.",
+        "data": {
+          "station": "Wetterstation",
+          "scan_interval": "Aktualisierungsintervall (Sekunden)",
+          "fallback_weather_entity": "Fallback-Wetterentität (optional)",
+          "enable_open_meteo_fallback": "Automatischen Open-Meteo-Fallback aktivieren",
+          "stale_threshold_hours": "SMN-Veralterungsschwelle (Stunden)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Optionale Home-Assistant-Wetterentität, die verwendet wird, wenn SMN-Berichte veraltet sind oder fehlen.",
+          "enable_open_meteo_fallback": "Open-Meteo automatisch abfragen, wenn SMN-Berichte veraltet sind und keine Fallback-Entität verfügbar ist.",
+          "stale_threshold_hours": "Anzahl der Stunden, nach denen ein SMN-Stationsbericht als veraltet gilt."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Eine Wetterentität derselben SMN-Integration kann nicht ausgewählt werden."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperatur"
+      },
+      "apparent_temperature": {
+        "name": "Gefühlte Temperatur"
+      },
+      "humidity": {
+        "name": "Luftfeuchtigkeit"
+      },
+      "pressure": {
+        "name": "Luftdruck"
+      },
+      "wind_speed": {
+        "name": "Windgeschwindigkeit"
+      },
+      "wind_direction": {
+        "name": "Windrichtung"
+      },
+      "visibility": {
+        "name": "Sichtweite"
+      },
+      "description": {
+        "name": "Aktuelle Wetterlage"
+      }
+    }
+  }
+}
