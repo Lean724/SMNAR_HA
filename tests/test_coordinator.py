@@ -13,9 +13,11 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 from custom_components.smn_ar.const import (
     ARGENTINA_TIMEZONE,
     ATTR_CONDITION_CLEAR_NIGHT,
+    ATTR_CONDITION_CLOUDY,
     ATTR_CONDITION_PARTLYCLOUDY,
     ATTR_CONDITION_RAINY,
     ATTR_CONDITION_SUNNY,
+    ATTR_CONDITION_WINDY,
     SOURCE_CACHE,
     SOURCE_FALLBACK_ENTITY,
     SOURCE_OPEN_METEO,
@@ -36,7 +38,9 @@ from custom_components.smn_ar.coordinator import (
     wind_direction_to_bearing,
 )
 from custom_components.smn_ar.fallback import (
+    enrich_forecast_conditions,
     parse_open_meteo_current,
+    parse_open_meteo_forecast_conditions,
     read_fallback_weather_entity,
     safe_float,
 )
@@ -495,3 +499,240 @@ async def test_coordinator_missing_station_preserves_cache_and_raises_without_ca
         pytest.raises(UpdateFailed),
     ):
         await coord_no_cache._async_update_data()
+
+
+def test_find_matching_key_prevents_false_positives_and_resolves_aliases() -> None:
+    """Station matching rejects unrelated stations and resolves official SMN aliases."""
+    tiepre_candidates = {
+        normalize_name("Marcos Juárez"): True,
+        normalize_name("Santa Rosa"): True,
+        normalize_name("Bernardo De Irigoyen"): True,
+        normalize_name("San Martín"): True,
+        normalize_name("Aeroparque Buenos Aires"): True,
+        normalize_name("Santa Fe"): True,
+        normalize_name("Jujuy"): True,
+        normalize_name("La Quiaca"): True,
+        normalize_name("Esc. Aviación Militar"): True,
+        normalize_name("Pcia. Roque Saenz Peña"): True,
+        normalize_name("Villa María Del Río Seco"): True,
+    }
+    pron5d_candidates = {
+        normalize_name("BERNARDO_DE_IRIGOYEN_AERO"): True,
+        normalize_name("SAN_MARTIN_(MZA)"): True,
+        normalize_name("ESC.AVIACION_MILITAR_AERO"): True,
+        normalize_name("PCIA._ROQUE_SAENZ_PEÑA_AERO"): True,
+        normalize_name("LA_QUIACA_OBS"): True,
+        normalize_name("PILAR_OBS"): True,
+        normalize_name("BUENOS_AIRES"): True,
+    }
+
+    # False positives must return None
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "BENITO JUAREZ AERO"
+        )._find_matching_key(tiepre_candidates)
+        is None
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "SANTA ROSA DE CONLARA AERO"
+        )._find_matching_key(tiepre_candidates)
+        is None
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "CAMPO DE MAYO AERO"
+        )._find_matching_key(pron5d_candidates)
+        is None
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "BASE SAN MARTIN"
+        )._find_matching_key(pron5d_candidates)
+        is None
+    )
+
+    # Legitimate aliases resolve properly across both formats
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "AEROPARQUE AERO"
+        )._find_matching_key(tiepre_candidates)
+        == "AEROPARQUE BUENOS AIRES"
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "SAUCE VIEJO AERO"
+        )._find_matching_key(tiepre_candidates)
+        == "SANTA FE"
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "JUJUY U N"
+        )._find_matching_key(tiepre_candidates)
+        == "JUJUY"
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "ESCUELA DE AVIACION MILITAR AE"
+        )._find_matching_key(pron5d_candidates)
+        == "ESC AVIACION MILITAR"
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "PRESIDENCIA ROQUE SAENZ PEÑA A"
+        )._find_matching_key(pron5d_candidates)
+        == "PCIA ROQUE SAENZ PENA"
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "LA QUIACA OBSERVATORIO"
+        )._find_matching_key(pron5d_candidates)
+        == "LA QUIACA OBS"
+    )
+    assert (
+        SMNDataUpdateCoordinator(
+            MagicMock(), MagicMock(), "VILLA DE MARIA DEL RIO SECO"
+        )._find_matching_key(tiepre_candidates)
+        == "VILLA MARIA DEL RIO SECO"
+    )
+
+
+def test_parse_and_enrich_forecast_conditions_open_meteo() -> None:
+    """Dry SMN forecast slots/days adopt sky conditions while SMN rain/wind stays intact."""
+    payload = {
+        "hourly": {
+            "time": ["2026-11-22T15:00", "2026-11-22T21:00", "2026-11-23T15:00"],
+            "weather_code": [0, 0, 3],
+            "is_day": [1, 0, 1],
+        },
+        "daily": {
+            "time": ["2026-11-22", "2026-11-23", "2026-11-24"],
+            "weather_code": [0, 3, 0],
+        },
+    }
+    hourly_conds, daily_conds = parse_open_meteo_forecast_conditions(payload)
+    assert hourly_conds["2026-11-22T15"] == ATTR_CONDITION_SUNNY
+    assert hourly_conds["2026-11-22T21"] == ATTR_CONDITION_CLEAR_NIGHT
+    assert daily_conds["2026-11-23"] == ATTR_CONDITION_CLOUDY
+
+    smn_hourly = [
+        {
+            "datetime": "2026-11-22T18:00:00+00:00",  # 15:00 ART
+            "condition": ATTR_CONDITION_PARTLYCLOUDY,
+            "native_temperature": 26.0,
+        },
+        {
+            "datetime": "2026-11-23T00:00:00+00:00",  # 21:00 ART (2026-11-22)
+            "condition": ATTR_CONDITION_PARTLYCLOUDY,
+            "native_temperature": 17.0,
+        },
+        {
+            "datetime": "2026-11-23T18:00:00+00:00",  # 15:00 ART (2026-11-23)
+            "condition": ATTR_CONDITION_RAINY,  # SMN rain must NOT be overwritten
+            "native_temperature": 21.0,
+        },
+    ]
+    smn_daily = [
+        {"datetime": "2026-11-22T12:00:00+00:00", "condition": ATTR_CONDITION_PARTLYCLOUDY},
+        {"datetime": "2026-11-23T12:00:00+00:00", "condition": ATTR_CONDITION_WINDY},
+        {"datetime": "2026-11-24T12:00:00+00:00", "condition": ATTR_CONDITION_PARTLYCLOUDY},
+    ]
+
+    enr_h, enr_d = enrich_forecast_conditions(
+        smn_hourly, smn_daily, hourly_conds, daily_conds
+    )
+    assert enr_h[0]["condition"] == ATTR_CONDITION_SUNNY
+    assert enr_h[1]["condition"] == ATTR_CONDITION_CLEAR_NIGHT
+    assert enr_h[2]["condition"] == ATTR_CONDITION_RAINY
+    assert enr_d[0]["condition"] == ATTR_CONDITION_SUNNY
+    assert enr_d[1]["condition"] == ATTR_CONDITION_WINDY
+    assert enr_d[2]["condition"] == ATTR_CONDITION_SUNNY
+
+
+@pytest.mark.asyncio
+async def test_coordinator_enriches_forecasts_b1_priority_then_b2() -> None:
+    """B1 weather.get_forecasts enriches daily icons with priority; B2 fills missing hourly slots."""
+    now_ar = datetime.now(ARGENTINA_TIMEZONE)
+    months_es = [
+        "",
+        "enero",
+        "febrero",
+        "marzo",
+        "abril",
+        "mayo",
+        "junio",
+        "julio",
+        "agosto",
+        "septiembre",
+        "octubre",
+        "noviembre",
+        "diciembre",
+    ]
+    date_str = f"{now_ar.day:02d}-{months_es[now_ar.month]}-{now_ar.year}"
+    time_str = now_ar.strftime("%H:%M")
+    fresh_tp = f"Mariano Moreno;{date_str};{time_str};Despejado;10 km;22.0;No se calcula; 50;Norte  10;1012.0 / \n"
+    sample_fc = (
+        " MARIANO_MORENO_AERO\n"
+        " ================================================================================================\n"
+        "      FECHA *          TEMPERATURA      VIENTO      PRECIPITACION(mm)\n"
+        "                                     (DIR | KM/H)                        \n"
+        " ================================================================================================\n"
+        "  22/NOV/2026 15Hs.        26.2       150 |   9         0.0 \n"
+        "  23/NOV/2026 15Hs.        28.1       294 |  11         0.0 \n"
+        " ================================================================================================\n"
+    )
+
+    b1_state = MagicMock()
+    b1_state.state = ATTR_CONDITION_SUNNY
+    b1_state.attributes = {"supported_features": 1}  # Only FORECAST_DAILY supported
+
+    hass = MagicMock()
+    hass.states.get = MagicMock(
+        side_effect=lambda eid: b1_state if eid == "weather.google" else None
+    )
+    hass.services.has_service = MagicMock(return_value=True)
+    hass.services.async_call = AsyncMock(
+        return_value={
+            "weather.google": {
+                "forecast": [
+                    {
+                        "datetime": "2026-11-22T03:00:00+00:00",
+                        "condition": ATTR_CONDITION_SUNNY,
+                    },
+                    {
+                        "datetime": "2026-11-23T03:00:00+00:00",
+                        "condition": ATTR_CONDITION_RAINY,
+                    },
+                ]
+            }
+        }
+    )
+
+    coord = SMNDataUpdateCoordinator(
+        hass,
+        MagicMock(entry_id="e1"),
+        "MARIANO MORENO AERO",
+        fallback_entity="weather.google",
+        enable_open_meteo_fallback=True,
+    )
+
+    om_hourly = {"2026-11-22T15": ATTR_CONDITION_SUNNY, "2026-11-23T15": ATTR_CONDITION_CLOUDY}
+    om_daily = {"2026-11-22": ATTR_CONDITION_CLOUDY, "2026-11-23": ATTR_CONDITION_SUNNY}
+
+    with (
+        patch.object(
+            coord, "_fetch_zip_text", new=AsyncMock(side_effect=[fresh_tp, sample_fc])
+        ),
+        patch(
+            "custom_components.smn_ar.coordinator.async_fetch_open_meteo_forecast_conditions",
+            new=AsyncMock(return_value=(om_hourly, om_daily)),
+        ) as mock_om_fc,
+    ):
+        data = await coord._async_update_data()
+
+    # B1 provided daily (sunny, rainy) and B2 filled missing hourly (sunny, cloudy)
+    mock_om_fc.assert_awaited_once()
+    assert data["daily_forecast"][0]["condition"] == ATTR_CONDITION_SUNNY
+    assert data["daily_forecast"][1]["condition"] == ATTR_CONDITION_RAINY
+    assert data["hourly_forecast"][0]["condition"] == ATTR_CONDITION_SUNNY
+    assert data["hourly_forecast"][1]["condition"] == ATTR_CONDITION_CLOUDY

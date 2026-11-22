@@ -1,6 +1,7 @@
 """Fallback weather providers (HA weather entity and Open-Meteo) and unit helpers."""
 from __future__ import annotations
 
+import inspect
 import logging
 import math
 from collections.abc import Callable, Mapping
@@ -12,6 +13,7 @@ from homeassistant.components.weather import (
     ATTR_CONDITION_CLEAR_NIGHT,
     ATTR_CONDITION_PARTLYCLOUDY,
     ATTR_CONDITION_SUNNY,
+    WeatherEntityFeature,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -456,3 +458,231 @@ def merge_weather_with_fallback(
     merged["smn_last_report_date"] = smn.get("date")
     merged["smn_last_report_time"] = smn.get("time")
     return merged
+
+
+def parse_open_meteo_forecast_conditions(
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Parse Open-Meteo hourly and daily WMO weather codes into condition maps."""
+    hourly_conditions: dict[str, str] = {}
+    hourly = payload.get("hourly")
+    if isinstance(hourly, Mapping):
+        times = hourly.get("time")
+        codes = hourly.get("weather_code")
+        is_days = hourly.get("is_day")
+        if isinstance(times, list) and isinstance(codes, list):
+            for idx, time_raw in enumerate(times):
+                if idx >= len(codes) or not isinstance(time_raw, str):
+                    continue
+                if len(time_raw) < 13:
+                    continue
+                is_day_val = (
+                    is_days[idx]
+                    if isinstance(is_days, list) and idx < len(is_days)
+                    else 1
+                )
+                code_val = safe_float(codes[idx])
+                if code_val is None:
+                    continue
+                hourly_conditions[time_raw[:13]] = wmo_code_to_condition(
+                    code_val, is_night=(is_day_val == 0)
+                )
+
+    daily_conditions: dict[str, str] = {}
+    daily = payload.get("daily")
+    if isinstance(daily, Mapping):
+        times = daily.get("time")
+        codes = daily.get("weather_code")
+        if isinstance(times, list) and isinstance(codes, list):
+            for idx, time_raw in enumerate(times):
+                if idx >= len(codes) or not isinstance(time_raw, str):
+                    continue
+                if len(time_raw) < 10:
+                    continue
+                code_val = safe_float(codes[idx])
+                if code_val is None:
+                    continue
+                daily_conditions[time_raw[:10]] = wmo_code_to_condition(
+                    code_val, is_night=False
+                )
+
+    return hourly_conditions, daily_conditions
+
+
+async def async_fetch_open_meteo_forecast_conditions(
+    session: aiohttp.ClientSession,
+    latitude: float,
+    longitude: float,
+    timeout: int = DEFAULT_TIMEOUT,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Fetch Open-Meteo daily and hourly sky conditions to enrich SMN pron5d icons."""
+    params = {
+        "latitude": f"{latitude}",
+        "longitude": f"{longitude}",
+        "daily": "weather_code",
+        "hourly": "weather_code,is_day",
+        "forecast_days": "6",
+        "timezone": "America/Argentina/Buenos_Aires",
+    }
+    try:
+        async with session.get(
+            URL_OPEN_METEO,
+            params=params,
+            timeout=aiohttp.ClientTimeout(total=timeout),
+            headers={"User-Agent": "HomeAssistant-SMNAR/1.0"},
+        ) as response:
+            response.raise_for_status()
+            payload = await response.json()
+        if not isinstance(payload, Mapping):
+            return {}, {}
+        return parse_open_meteo_forecast_conditions(payload)
+    except (TimeoutError, aiohttp.ClientError, ValueError, KeyError) as err:
+        _LOGGER.debug("Open-Meteo forecast condition fetch failed: %s", err)
+        return {}, {}
+
+
+def _parse_forecast_dt_to_argentina(dt_raw: Any) -> tuple[datetime | None, str | None]:
+    """Parse a forecast item datetime string into Argentina local time or date key."""
+    if not isinstance(dt_raw, str) or not dt_raw.strip():
+        return None, None
+    cleaned = dt_raw.strip()
+    if "T" not in cleaned and " " not in cleaned and len(cleaned) >= 10:
+        return None, cleaned[:10]
+    try:
+        dt = datetime.fromisoformat(cleaned)
+    except ValueError:
+        return None, cleaned[:10] if len(cleaned) >= 10 else None
+    dt_ar = (
+        dt.astimezone(ARGENTINA_TIMEZONE)
+        if dt.tzinfo
+        else dt.replace(tzinfo=ARGENTINA_TIMEZONE)
+    )
+    return dt_ar, dt_ar.strftime("%Y-%m-%d")
+
+
+async def async_fetch_fallback_entity_forecast_conditions(
+    hass: HomeAssistant | None,
+    entity_id: str | None,
+    *,
+    excluded_entity_ids: set[str] | None = None,
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Fetch daily and hourly sky conditions from an HA weather fallback entity (B1)."""
+    if hass is None or not entity_id:
+        return {}, {}
+    if entity_id in (excluded_entity_ids or set()):
+        return {}, {}
+
+    states = getattr(hass, "states", None)
+    state = states.get(entity_id) if states is not None else None
+    if state is None:
+        return {}, {}
+    state_val = getattr(state, "state", None)
+    if not isinstance(state_val, str) or state_val in ("unknown", "unavailable", ""):
+        return {}, {}
+
+    services = getattr(hass, "services", None)
+    if services is None or services.has_service("weather", "get_forecasts") is not True:
+        return {}, {}
+
+    attrs = getattr(state, "attributes", None)
+    supported = attrs.get("supported_features") if isinstance(attrs, Mapping) else None
+    if isinstance(supported, int) and not isinstance(supported, bool):
+        try_daily = bool(supported & WeatherEntityFeature.FORECAST_DAILY)
+        try_hourly = bool(supported & WeatherEntityFeature.FORECAST_HOURLY)
+    else:
+        try_daily = True
+        try_hourly = True
+
+    hourly_conditions: dict[str, str] = {}
+    daily_conditions: dict[str, str] = {}
+
+    for ftype, enabled in (("daily", try_daily), ("hourly", try_hourly)):
+        if not enabled:
+            continue
+        try:
+            call_res = services.async_call(
+                "weather",
+                "get_forecasts",
+                {"type": ftype},
+                target={"entity_id": entity_id},
+                blocking=True,
+                return_response=True,
+            )
+            response = await call_res if inspect.isawaitable(call_res) else call_res
+        except (AttributeError, KeyError, RuntimeError, TypeError, ValueError) as err:
+            _LOGGER.debug(
+                "Failed reading %s forecast from fallback entity %s: %s",
+                ftype,
+                entity_id,
+                err,
+            )
+            continue
+
+        if not isinstance(response, Mapping):
+            continue
+        entity_payload = response.get(entity_id)
+        if not isinstance(entity_payload, Mapping):
+            continue
+        forecast_items = entity_payload.get("forecast")
+        if not isinstance(forecast_items, list):
+            continue
+
+        for item in forecast_items:
+            if not isinstance(item, Mapping):
+                continue
+            cond = item.get("condition")
+            if not isinstance(cond, str) or not cond:
+                continue
+            dt_ar, date_key = _parse_forecast_dt_to_argentina(item.get("datetime"))
+            if ftype == "daily" and date_key:
+                daily_conditions.setdefault(date_key, cond)
+            elif ftype == "hourly" and dt_ar is not None:
+                hourly_conditions.setdefault(dt_ar.strftime("%Y-%m-%dT%H"), cond)
+
+    return hourly_conditions, daily_conditions
+
+
+def enrich_forecast_conditions(
+    hourly_forecast: list[dict[str, Any]],
+    daily_forecast: list[dict[str, Any]],
+    hourly_conditions: Mapping[str, str],
+    daily_conditions: Mapping[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Enrich dry/calm SMN forecast entries with sky conditions without altering SMN rain/wind."""
+    enriched_hourly: list[dict[str, Any]] = []
+    for slot in hourly_forecast:
+        new_slot = dict(slot)
+        if new_slot.get("condition") == ATTR_CONDITION_PARTLYCLOUDY:
+            dt_raw = new_slot.get("datetime")
+            if isinstance(dt_raw, str):
+                try:
+                    slot_ar = datetime.fromisoformat(dt_raw).astimezone(
+                        ARGENTINA_TIMEZONE
+                    )
+                    hour_key = slot_ar.strftime("%Y-%m-%dT%H")
+                    day_key = slot_ar.strftime("%Y-%m-%d")
+                    cond = hourly_conditions.get(hour_key)
+                    if cond is None and day_key in daily_conditions:
+                        cond = daily_conditions[day_key]
+                        if cond == ATTR_CONDITION_SUNNY and (
+                            slot_ar.hour >= 20 or slot_ar.hour < 6
+                        ):
+                            cond = ATTR_CONDITION_CLEAR_NIGHT
+                    if cond is not None:
+                        new_slot["condition"] = cond
+                except ValueError:
+                    pass
+        enriched_hourly.append(new_slot)
+
+    enriched_daily: list[dict[str, Any]] = []
+    for day in daily_forecast:
+        new_day = dict(day)
+        if new_day.get("condition") == ATTR_CONDITION_PARTLYCLOUDY:
+            dt_raw = new_day.get("datetime")
+            if isinstance(dt_raw, str) and len(dt_raw) >= 10:
+                cond = daily_conditions.get(dt_raw[:10])
+                if cond is not None:
+                    new_day["condition"] = cond
+        enriched_daily.append(new_day)
+
+    return enriched_hourly, enriched_daily

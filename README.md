@@ -33,6 +33,7 @@ Integración de **Home Assistant para el clima de Argentina**. Consulta las cond
 * **Pronóstico Extendido a 5 Días**:
   * Pronóstico horario (cada 3 horas): temperatura, precipitación acumulada (mm), viento y condición.
   * Pronóstico diario: temperaturas máximas y mínimas estimadas agrupadas por día local de Argentina (`UTC-3`), precipitación total estimada y condición predominante.
+  * Enriquecimiento de iconos del cielo en pronóstico: cuando `pron5d` no reporta precipitaciones ni vientos fuertes, completa la condición del cielo (despejado, nublado, etc.) usando la entidad de respaldo (`B1`) o Open-Meteo (`B2`), conservando siempre las temperaturas, vientos y precipitaciones del SMN.
 * **Cobertura Nacional**: Más de 118 estaciones meteorológicas oficiales en todas las provincias de Argentina y bases antárticas.
 * **Detección Automática de Cercanía**: Calcula por geolocalización (fórmula Haversine) la estación oficial más cercana a las coordenadas de Home Assistant.
 * **Sensores Individuales**: 8 entidades tipo `sensor` independientes para Temperatura, Sensación Térmica, Humedad, Presión, Velocidad del Viento, Dirección del Viento, Visibilidad y Condición Actual para tableros y automatizaciones, con atributos de diagnóstico (`fuente_datos`, `respaldo_activo`, `sensacion_termica_fuente`).

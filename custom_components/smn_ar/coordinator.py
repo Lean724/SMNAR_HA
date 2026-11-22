@@ -40,11 +40,15 @@ from .const import (
     ST_SOURCE_SMN,
     ST_SOURCE_TEMPERATURE_FALLBACK,
     STATION_ALIASES,
+    STATION_STOPWORDS,
     URL_CURRENT_WEATHER,
     URL_FORECAST,
 )
 from .fallback import (
+    async_fetch_fallback_entity_forecast_conditions,
     async_fetch_open_meteo,
+    async_fetch_open_meteo_forecast_conditions,
+    enrich_forecast_conditions,
     get_entry_weather_entities,
     merge_weather_with_fallback,
     read_fallback_weather_entity,
@@ -92,12 +96,12 @@ def normalize_name(text: str) -> str:
         return ""
     s = unicodedata.normalize("NFKD", text)
     s = "".join(c for c in s if not unicodedata.combining(c))
-    s = s.upper().replace("_", " ").replace("-", " ").strip()
+    s = s.upper().replace("_", " ").replace("-", " ").replace(".", " ").strip()
     s = re.sub(r"\(.*?\)", "", s).strip()
     s = re.sub(r"\s+AERO$", "", s)
     s = re.sub(r"\s+AEROPUERTO$", "", s)
     s = re.sub(r"[^A-Z0-9\s]", "", s)
-    return re.sub(r"\s+", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
 
 
 def wind_direction_to_bearing(direction: str | None) -> int | None:
@@ -456,6 +460,10 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             hourly_forecast = self._last_valid_data.get("hourly_forecast", [])
             daily_forecast = self._last_valid_data.get("daily_forecast", [])
 
+        hourly_forecast, daily_forecast = await self._async_enrich_forecasts(
+            hourly_forecast, daily_forecast
+        )
+
         current_err: BaseException | None = None
         if isinstance(current_res, BaseException):
             current_err = current_res
@@ -510,33 +518,110 @@ class SMNDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except zipfile.BadZipFile as err:
             raise UpdateFailed(f"Corrupted zip archive for {label}: {err}") from err
 
+    async def _async_enrich_forecasts(
+        self,
+        hourly_forecast: list[dict[str, Any]],
+        daily_forecast: list[dict[str, Any]],
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        """Enrich dry/calm SMN forecast entries with sky conditions from B1 -> B2."""
+        dry_hourly = [
+            slot
+            for slot in hourly_forecast
+            if slot.get("condition") == ATTR_CONDITION_PARTLYCLOUDY
+        ]
+        dry_daily = [
+            day
+            for day in daily_forecast
+            if day.get("condition") == ATTR_CONDITION_PARTLYCLOUDY
+        ]
+        if not dry_hourly and not dry_daily:
+            return hourly_forecast, daily_forecast
+
+        hourly_conds: dict[str, str] = {}
+        daily_conds: dict[str, str] = {}
+
+        if self._fallback_entity:
+            b1_h, b1_d = await async_fetch_fallback_entity_forecast_conditions(
+                self.hass,
+                self._fallback_entity,
+                excluded_entity_ids=self._get_own_weather_entity_ids(),
+            )
+            hourly_conds.update(b1_h)
+            daily_conds.update(b1_d)
+
+        def _has_uncovered_slots() -> bool:
+            for day in dry_daily:
+                dt_raw = day.get("datetime")
+                if isinstance(dt_raw, str) and dt_raw[:10] not in daily_conds:
+                    return True
+            for slot in dry_hourly:
+                dt_raw = slot.get("datetime")
+                if isinstance(dt_raw, str):
+                    try:
+                        slot_ar = datetime.fromisoformat(dt_raw).astimezone(
+                            ARGENTINA_TIMEZONE
+                        )
+                    except ValueError:
+                        continue
+                    if slot_ar.strftime("%Y-%m-%dT%H") not in hourly_conds:
+                        return True
+            return False
+
+        if self._enable_open_meteo_fallback and _has_uncovered_slots():
+            coords = self._get_fallback_coordinates()
+            if coords is not None:
+                om_h, om_d = await async_fetch_open_meteo_forecast_conditions(
+                    self._session, coords[0], coords[1]
+                )
+                for k, v in om_h.items():
+                    hourly_conds.setdefault(k, v)
+                for k, v in om_d.items():
+                    daily_conds.setdefault(k, v)
+
+        if not hourly_conds and not daily_conds:
+            return hourly_forecast, daily_forecast
+
+        return enrich_forecast_conditions(
+            hourly_forecast, daily_forecast, hourly_conds, daily_conds
+        )
+
     def _find_matching_key(self, candidates: dict[str, Any]) -> str | None:
         """Find the matching key for the configured station in a dictionary."""
         target = self._norm_station
-
-        # Check explicit alias
-        if target in STATION_ALIASES:
-            alias = normalize_name(STATION_ALIASES[target])
-            if alias in candidates:
-                return alias
+        if not target:
+            return None
 
         # 1. Exact match
         if target in candidates:
             return target
 
-        # 2. Substring matching
+        # 2. Explicit alias lookup
+        for alias in STATION_ALIASES.get(target, ()):
+            norm_alias = normalize_name(alias)
+            if norm_alias in candidates:
+                return norm_alias
+
+        # 3. Conservative token matching (ignore stopwords, isolate Antarctic bases)
+        target_tokens = set(target.split())
+        target_is_base = "BASE" in target_tokens
+        target_sig = target_tokens - STATION_STOPWORDS or target_tokens
+
+        best_match: str | None = None
+        best_score = 0.0
         for key in candidates:
-            if target in key or key in target:
+            key_tokens = set(key.split())
+            if target_is_base != ("BASE" in key_tokens):
+                continue
+            key_sig = key_tokens - STATION_STOPWORDS or key_tokens
+            if target_sig == key_sig:
                 return key
 
-        # 3. Token overlap matching
-        target_tokens = set(target.split())
-        best_match = None
-        best_score = 0
-        for key in candidates:
-            common = target_tokens & set(key.split())
-            if len(common) > best_score:
-                best_score = len(common)
+            common = target_sig & key_sig
+            if len(common) < 2:
+                continue
+            jaccard = len(common) / len(target_sig | key_sig)
+            if jaccard >= 0.75 and jaccard > best_score:
+                best_score = jaccard
                 best_match = key
 
         return best_match
