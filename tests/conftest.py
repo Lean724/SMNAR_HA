@@ -106,6 +106,30 @@ if "homeassistant" not in sys.modules:
     dev_reg.DeviceEntryType = DeviceEntryType
     dev_reg.DeviceInfo = dict
 
+    # Helpers selector
+    class EntitySelectorConfig:
+        def __init__(self, domain=None, exclude_entities=None, **kwargs):
+            self.domain = domain
+            self.exclude_entities = exclude_entities or []
+
+    class EntitySelector:
+        def __init__(self, config=None):
+            self.config = config
+
+        def __call__(self, value):
+            if not isinstance(value, str) or not value:
+                raise ValueError("Entity ID must be a non-empty string")
+            return value
+
+    selector_mod = MagicMock()
+    selector_mod.EntitySelectorConfig = EntitySelectorConfig
+    selector_mod.EntitySelector = EntitySelector
+
+    # Helpers entity_registry
+    entity_reg_mod = MagicMock()
+    entity_reg_mod.async_get = MagicMock(return_value=MagicMock())
+    entity_reg_mod.async_entries_for_config_entry = MagicMock(return_value=[])
+
     # Components sensor
     class SensorEntity:
         pass
@@ -150,8 +174,18 @@ if "homeassistant" not in sys.modules:
         def __init_subclass__(cls, **kwargs):
             super().__init_subclass__()
 
+        def async_show_form(self, **kwargs):
+            return {"type": "form", **kwargs}
+
+        def async_create_entry(self, **kwargs):
+            return {"type": "create_entry", **kwargs}
+
     class OptionsFlow:
-        pass
+        def async_show_form(self, **kwargs):
+            return {"type": "form", **kwargs}
+
+        def async_create_entry(self, **kwargs):
+            return {"type": "create_entry", **kwargs}
 
     config_entries.ConfigFlow = ConfigFlow
     config_entries.OptionsFlow = OptionsFlow
@@ -159,9 +193,18 @@ if "homeassistant" not in sys.modules:
     core = MagicMock()
     core.callback = lambda fn: fn
 
+    helpers = MagicMock()
+    helpers.selector = selector_mod
+    helpers.entity_registry = entity_reg_mod
+    helpers.update_coordinator = update_coord
+    helpers.device_registry = dev_reg
+    helpers.aiohttp_client = MagicMock()
+    helpers.entity_platform = MagicMock()
+
     ha.config_entries = config_entries
     ha.const = const
     ha.core = core
+    ha.helpers = helpers
 
     # Register mock modules
     sys.modules["homeassistant"] = ha
@@ -171,9 +214,11 @@ if "homeassistant" not in sys.modules:
     sys.modules["homeassistant.const"] = const
     sys.modules["homeassistant.core"] = core
     sys.modules["homeassistant.config_entries"] = config_entries
-    sys.modules["homeassistant.helpers"] = MagicMock()
+    sys.modules["homeassistant.helpers"] = helpers
     sys.modules["homeassistant.helpers.update_coordinator"] = update_coord
     sys.modules["homeassistant.helpers.device_registry"] = dev_reg
-    sys.modules["homeassistant.helpers.aiohttp_client"] = MagicMock()
-    sys.modules["homeassistant.helpers.entity_platform"] = MagicMock()
+    sys.modules["homeassistant.helpers.selector"] = selector_mod
+    sys.modules["homeassistant.helpers.entity_registry"] = entity_reg_mod
+    sys.modules["homeassistant.helpers.aiohttp_client"] = helpers.aiohttp_client
+    sys.modules["homeassistant.helpers.entity_platform"] = helpers.entity_platform
     sys.modules["homeassistant.data_entry_flow"] = MagicMock()

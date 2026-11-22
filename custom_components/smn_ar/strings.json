@@ -6,9 +6,20 @@
         "description": "Select the SMN weather station to monitor current conditions and 5-day weather forecast.",
         "data": {
           "station": "Weather station",
-          "scan_interval": "Update interval (seconds)"
+          "scan_interval": "Update interval (seconds)",
+          "fallback_weather_entity": "Fallback weather entity (optional)",
+          "enable_open_meteo_fallback": "Enable automatic Open-Meteo fallback",
+          "stale_threshold_hours": "SMN staleness threshold (hours)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Optional Home Assistant weather entity used when SMN reports are outdated or missing.",
+          "enable_open_meteo_fallback": "Automatically query Open-Meteo when SMN reports are outdated and no fallback entity is available.",
+          "stale_threshold_hours": "Hours after which an SMN station report is considered outdated."
         }
       }
+    },
+    "error": {
+      "invalid_fallback_entity": "Cannot select a weather entity belonging to this same SMN integration."
     },
     "abort": {
       "already_configured": "This weather station is already configured in Home Assistant."
@@ -18,12 +29,23 @@
     "step": {
       "init": {
         "title": "SMN Configuration Options",
-        "description": "Modify the selected weather station or update frequency.",
+        "description": "Modify the selected weather station, update frequency, or fallback behavior.",
         "data": {
           "station": "Weather station",
-          "scan_interval": "Update interval (seconds)"
+          "scan_interval": "Update interval (seconds)",
+          "fallback_weather_entity": "Fallback weather entity (optional)",
+          "enable_open_meteo_fallback": "Enable automatic Open-Meteo fallback",
+          "stale_threshold_hours": "SMN staleness threshold (hours)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Optional Home Assistant weather entity used when SMN reports are outdated or missing.",
+          "enable_open_meteo_fallback": "Automatically query Open-Meteo when SMN reports are outdated and no fallback entity is available.",
+          "stale_threshold_hours": "Hours after which an SMN station report is considered outdated."
         }
       }
+    },
+    "error": {
+      "invalid_fallback_entity": "Cannot select a weather entity belonging to this same SMN integration."
     }
   },
   "entity": {

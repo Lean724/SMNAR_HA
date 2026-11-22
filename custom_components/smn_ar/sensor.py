@@ -133,7 +133,7 @@ class SMNSensor(CoordinatorEntity[SMNDataUpdateCoordinator], SensorEntity):
         self.entity_description = description
         self._entry = entry
 
-        st_meta = coordinator.data.get("station", {})
+        st_meta = (coordinator.data or {}).get("station", {})
         station_id = st_meta.get("station_id") or coordinator.station_name
 
         self._attr_unique_id = f"{DOMAIN}_{station_id}_{description.key}"
@@ -148,4 +148,18 @@ class SMNSensor(CoordinatorEntity[SMNDataUpdateCoordinator], SensorEntity):
     @property
     def native_value(self) -> Any:
         """Return the state of the sensor."""
-        return self.entity_description.value_fn(self.coordinator.data)
+        return self.entity_description.value_fn(self.coordinator.data or {})
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return diagnostic metadata attributes for the sensor."""
+        current = (self.coordinator.data or {}).get("current", {})
+        attrs: dict[str, Any] = {
+            "fuente_datos": current.get("data_source"),
+            "respaldo_activo": current.get("fallback_active", False),
+        }
+        if self.entity_description.key == "apparent_temperature":
+            attrs["sensacion_termica_fuente"] = current.get(
+                "apparent_temperature_source"
+            )
+        return attrs

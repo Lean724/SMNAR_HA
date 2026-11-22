@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Servizio Meteorologico Nazionale (Argentina)",
+        "description": "Seleziona la stazione meteorologica SMN per monitorare le condizioni attuali e le previsioni a 5 giorni.",
+        "data": {
+          "station": "Stazione meteorologica",
+          "scan_interval": "Intervallo di aggiornamento (secondi)",
+          "fallback_weather_entity": "Entità meteo di riserva (opzionale)",
+          "enable_open_meteo_fallback": "Abilita fallback automatico Open-Meteo",
+          "stale_threshold_hours": "Soglia di obsolescenza SMN (ore)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Entità meteo opzionale di Home Assistant usata quando i report SMN sono obsoleti o mancanti.",
+          "enable_open_meteo_fallback": "Interroga automaticamente Open-Meteo quando i report SMN sono obsoleti e nessuna entità di riserva è disponibile.",
+          "stale_threshold_hours": "Ore oltre le quali un report della stazione SMN è considerato obsoleto."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Impossibile selezionare un'entità meteo appartenente a questa stessa integrazione SMN."
+    },
+    "abort": {
+      "already_configured": "Questa stazione meteorologica è già configurata in Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni di configurazione SMN",
+        "description": "Modifica la stazione meteorologica selezionata, la frequenza di aggiornamento o il comportamento di riserva.",
+        "data": {
+          "station": "Stazione meteorologica",
+          "scan_interval": "Intervallo di aggiornamento (secondi)",
+          "fallback_weather_entity": "Entità meteo di riserva (opzionale)",
+          "enable_open_meteo_fallback": "Abilita fallback automatico Open-Meteo",
+          "stale_threshold_hours": "Soglia di obsolescenza SMN (ore)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Entità meteo opzionale di Home Assistant usata quando i report SMN sono obsoleti o mancanti.",
+          "enable_open_meteo_fallback": "Interroga automaticamente Open-Meteo quando i report SMN sono obsoleti e nessuna entità di riserva è disponibile.",
+          "stale_threshold_hours": "Ore oltre le quali un report della stazione SMN è considerato obsoleto."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Impossibile selezionare un'entità meteo appartenente a questa stessa integrazione SMN."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "apparent_temperature": {
+        "name": "Temperatura percepita"
+      },
+      "humidity": {
+        "name": "Umidità"
+      },
+      "pressure": {
+        "name": "Pressione atmosferica"
+      },
+      "wind_speed": {
+        "name": "Velocità del vento"
+      },
+      "wind_direction": {
+        "name": "Direzione del vento"
+      },
+      "visibility": {
+        "name": "Visibilità"
+      },
+      "description": {
+        "name": "Condizione attuale"
+      }
+    }
+  }
+}

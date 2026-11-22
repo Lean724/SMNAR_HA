@@ -1,0 +1,79 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Narodowy Serwis Meteorologiczny (Argentyna)",
+        "description": "Wybierz stację pogodową SMN, aby monitorować bieżące warunki oraz 5-dniową prognozę pogody.",
+        "data": {
+          "station": "Stacja pogodowa",
+          "scan_interval": "Interwał aktualizacji (sekundy)",
+          "fallback_weather_entity": "Zapasowa encja pogodowa (opcjonalnie)",
+          "enable_open_meteo_fallback": "Włącz automatyczny tryb zapasowy Open-Meteo",
+          "stale_threshold_hours": "Próg przestarzałości danych SMN (godziny)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Opcjonalna encja pogodowa Home Assistant używana, gdy raporty SMN są nieaktualne lub niedostępne.",
+          "enable_open_meteo_fallback": "Automatycznie pobieraj dane z Open-Meteo, gdy raporty SMN są nieaktualne i brak dostępnej encji zapasowej.",
+          "stale_threshold_hours": "Liczba godzin, po których raport stacji SMN uznawany jest za nieaktualny."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Nie można wybrać encji pogodowej należącej do tej samej integracji SMN."
+    },
+    "abort": {
+      "already_configured": "Ta stacja pogodowa jest już skonfigurowana w Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje konfiguracji SMN",
+        "description": "Zmień wybraną stację pogodową, częstotliwość aktualizacji lub działanie trybu zapasowego.",
+        "data": {
+          "station": "Stacja pogodowa",
+          "scan_interval": "Interwał aktualizacji (sekundy)",
+          "fallback_weather_entity": "Zapasowa encja pogodowa (opcjonalnie)",
+          "enable_open_meteo_fallback": "Włącz automatyczny tryb zapasowy Open-Meteo",
+          "stale_threshold_hours": "Próg przestarzałości danych SMN (godziny)"
+        },
+        "data_description": {
+          "fallback_weather_entity": "Opcjonalna encja pogodowa Home Assistant używana, gdy raporty SMN są nieaktualne lub niedostępne.",
+          "enable_open_meteo_fallback": "Automatycznie pobieraj dane z Open-Meteo, gdy raporty SMN są nieaktualne i brak dostępnej encji zapasowej.",
+          "stale_threshold_hours": "Liczba godzin, po których raport stacji SMN uznawany jest za nieaktualny."
+        }
+      }
+    },
+    "error": {
+      "invalid_fallback_entity": "Nie można wybrać encji pogodowej należącej do tej samej integracji SMN."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "apparent_temperature": {
+        "name": "Temperatura odczuwalna"
+      },
+      "humidity": {
+        "name": "Wilgotność"
+      },
+      "pressure": {
+        "name": "Ciśnienie atmosferyczne"
+      },
+      "wind_speed": {
+        "name": "Prędkość wiatru"
+      },
+      "wind_direction": {
+        "name": "Kierunek wiatru"
+      },
+      "visibility": {
+        "name": "Widoczność"
+      },
+      "description": {
+        "name": "Aktualny stan pogody"
+      }
+    }
+  }
+}
